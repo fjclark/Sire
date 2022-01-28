@@ -213,6 +213,18 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
                                     must be set equal to True in the config file. 
                                     """)
 
+use_cartesian_restraints = Parameter("use cartesian restraints", False, 
+                                     """Whether or not to use Cartesian-based protein-ligand restraints.""")
+
+cartesian_restraints_dict = Parameter("cartesian restraints dictionary", {}, 
+                                      """Dictionary of five dictionaries: anchor points in ligand, anchor points in receptor,
+                                       equilibrium values for , and associated force constants. Syntax is {"anchor_points":
+                                       {"l1":l1, "l2":l2, "l3":l3, "r1":r1, "r2":r2, "r3":r3}, 
+                                       "equilibrium_values":{ "xr_l1_0":xr_l1_0, "yr_l1_0": yr_l1_0, "zr_l1_0": zr_l1_0}, 
+                                       "force_constants":{ "k_xr_l1":k_xr_l1, "k_yr_l1": k_yr_l1, "k_zr_l1": k_zr_l1, 
+                                       "k_alpha:k_alpha, "k_beta": k_beta},"reference_frame_rotation":{"phi":phi,"theta":theta,
+                                       "psi":psi}} } TO DO - ADD DETAILED DESCRIPTION OF VARIABLES”””
+
 hydrogen_mass_repartitioning_factor = \
     Parameter('hydrogen mass repartitioning factor', 1.0,
               f'If larger than {HMR_MIN} (maximum is {HMR_MAX}), all hydrogen '
@@ -688,6 +700,54 @@ def boreschDihedralRestraintsToProperty(boresch_dict):
     return prop
 
 
+def cartesianPositionRestraintToProperty(cartesian_dict):
+    """Generates properties to store information needed to set up the Cartesian 
+    positional restraints.
+
+    Args:
+        cartesian_dict (dict): Containts the information required to set up all
+        Cartesian restraints
+
+    Returns:
+        class 'Sire.Base._Base.Properties': The properties required to
+        set up the Cartesian positional restraints.
+    """
+
+    prop = Properties()
+
+    for anchor in cartesian_dict['anchor_points']:
+        prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
+    for equil_val in cartesian_dict['equilibrium_values']:
+        prop.setProperty(f"{equil_val}", VariantProperty(cartesian_dict['equilibrium_values'][f'{equil_val}']))
+    for force_const in ["k_xr_l1", "k_yr_l1", "k_zr_l1"]:
+        prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
+
+    return prop
+
+
+def cartesianOrientationRestraintToProperty(cartesian_dict):
+    """Generates properties to store information needed to set up the Cartesian 
+    orientational restraint.
+
+    Args:
+        cartesian_dict (dict): Containts the information required to set up all
+        Cartesian restraints
+
+    Returns:
+        class 'Sire.Base._Base.Properties': The properties required to
+        set up the Cartesian orienational restraint.
+    """
+
+    for anchor in cartesian_dict['anchor_points']:
+        prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
+    for angle in cartesian_dict['reference_frame_rotation']:
+        prop.setProperty(f"{angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{angle}']))
+
+    #TODO: Implement
+
+    return None
+
+
 def propertyToAtomNumList(prop):
     list = []
     i = 0
@@ -816,6 +876,36 @@ def setupDistanceRestraints(system, restraints=None):
 
     return system
 
+    def checkAnchorsPresent(anchors_dict):
+        """Checks that selected anchor points are present in the system
+        and throws an error if not.
+
+        Args:
+            anchors_dict (dict): Dictionary of anchor points.
+        """
+        # Cycle through anchor points and print restrained atoms. Exit and notify
+        # the user if any anchor points specified are not present in the system.
+        anchors_not_present = list(anchors_dict.keys())
+        print("Boresch anchor points:")
+        for anchor in anchors_dict:
+            for i in range(0, molecules.nMolecules()):
+                mol = molecules.molecule(MolNum(i + 1))[0].molecule()
+                atoms_mol = mol.atoms()
+                natoms_mol = mol.nAtoms()
+                for j in range(0, natoms_mol):
+                    at = atoms_mol[j]
+                    atnumber = at.number()
+                    if anchors_dict[anchor] == atnumber.value():
+                        anchors_not_present.remove(anchor)
+                        print(anchor + "=" + str(at))
+
+        if anchors_not_present:
+            print("Error! The following anchor points do not not exist in the system:")
+            for anchor in anchors_not_present:
+                print(f"{anchor}: index {anchors_dict[anchor]-1}")
+            sys.exit(-1)
+
+
 def setupBoreschRestraints(system):
     """Takes initial system and adds information specifying the Boresch
     restraints. The distance, angle, and torsional restraints are stored as
@@ -838,36 +928,48 @@ def setupBoreschRestraints(system):
     for key in boresch_dict["anchor_points"].keys():
         boresch_dict["anchor_points"][key] += 1
 
-    # Get anchor points dicts
+    # Get anchor points dict and check anchors present
     anchors_dict = boresch_dict["anchor_points"]
-
-    # Cycle through anchor points and print restrained atoms. Exit and notify
-    # the user if any anchor points specified are not present in the system.
-    anchors_not_present = list(anchors_dict.keys())
-    print("Boresch anchor points:")
-    for anchor in anchors_dict:
-        for i in range(0, molecules.nMolecules()):
-            mol = molecules.molecule(MolNum(i + 1))[0].molecule()
-            atoms_mol = mol.atoms()
-            natoms_mol = mol.nAtoms()
-            for j in range(0, natoms_mol):
-                at = atoms_mol[j]
-                atnumber = at.number()
-                if anchors_dict[anchor] == atnumber.value():
-                    anchors_not_present.remove(anchor)
-                    print(anchor + "=" + str(at))
-
-    if anchors_not_present:
-        print("Error! The following anchor points do not not exist in the system:")
-        for anchor in anchors_not_present:
-            print(f"{anchor}: index {anchors_dict[anchor]-1}")
-        sys.exit(-1)
+    checkAnchorsPresent(anchors_dict)
     
     #Mol number 0 will store all the information related to the Boresch restraints in the system
     mol0 = system[MGName("all")].moleculeAt(0)[0].molecule()
     mol0 = mol0.edit().setProperty("boresch_dist_restraint", boreschDistRestraintToProperty(boresch_dict)).commit()
     mol0 = mol0.edit().setProperty("boresch_angle_restraints", boreschAngleRestraintsToProperty(boresch_dict)).commit()
     mol0 = mol0.edit().setProperty("boresch_dihedral_restraints", boreschDihedralRestraintsToProperty(boresch_dict)).commit()
+    system.update(mol0)
+
+    return system
+
+def setupCartesianRestraints(system):
+    """Takes initial system and adds information specifying the Cartesian
+    restraints. This is stored as properties in molecule number 0.
+
+    Args:
+        system (class 'Sire.System._System.System'): The initial system
+
+    Returns:
+        class 'Sire.System._System.System': The updated system with
+        Cartesian restraint properties stored in mol number 0
+    """
+    molecules = system[MGName("all")].molecules()
+
+    # Get Cartesian restraint dict in dict form
+    cartesian_dict = dict(cartesian_restraints_dict.val)
+    print(f"Cartesian restraints dictionary = {cartesian_dict}")
+
+    # Correct atom numbers by + 1
+    for key in cartesian_dict["anchor_points"].keys():
+        cartesian_dict["anchor_points"][key] += 1
+
+    # Get anchor points dict and check anchors present
+    anchors_dict = cartesian_dict["anchor_points"]
+
+    
+    #Mol number 0 will store all the information related to the Cartesian restraints in the system
+    mol0 = system[MGName("all")].moleculeAt(0)[0].molecule()
+    mol0 = mol0.edit().setProperty("cartesian_position_restraint", cartesianPositionRestraintToProperty(cartesian_dict)).commit()
+    mol0 = mol0.edit().setProperty("cartesian_orientation_restraint", cartesianOrientationRestraintToProperty(cartesian_dict)).commit()
     system.update(mol0)
 
     return system
@@ -1627,6 +1729,10 @@ def run():
             print("Setting up Boresch restraints...")
             system = setupBoreschRestraints(system)
 
+        if use_cartesian_restraints.val:
+            print("Setting up Cartesian restraints...")
+            system = setupCartesianRestraints(system)
+
         if hydrogen_mass_repartitioning_factor.val > 1.0:
             system = repartitionMasses(system, hmassfactor=hydrogen_mass_repartitioning_factor.val)
 
@@ -1789,6 +1895,10 @@ def runFreeNrg():
         if use_boresch_restraints.val:
             print("Setting up Boresch restraints...")
             system = setupBoreschRestraints(system)
+
+        if use_cartesian_restraints.val:
+            print("Setting up Cartesian restraints...")
+            system = setupCartesianRestraints(system)
 
         if hydrogen_mass_repartitioning_factor.val > 1.0:
             system = repartitionMasses(system, hmassfactor=hydrogen_mass_repartitioning_factor.val)

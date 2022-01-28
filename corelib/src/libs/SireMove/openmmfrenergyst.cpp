@@ -380,7 +380,7 @@ QString OpenMMFrEnergyST::toString() const
 void OpenMMFrEnergyST::initialise()
 {
 
-    bool Debug = false;
+    bool Debug = true;
     if (Debug)
     {
         qDebug() << "Initialising OpenMMFrEnergyST";
@@ -1239,6 +1239,25 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_dihedral_rest->addPerTorsionParameter("equil_val");
     custom_boresch_dihedral_rest->setUsesPeriodicBoundaryConditions(true);
     custom_boresch_dihedral_rest->addGlobalParameter("lamrest", Alchemical_value);
+
+    /****************************************CARTESIAN POSITIONAL POTENTIAL*****************************/
+    // Note that mapping from normal notation to particle numbers is {r1:p1, xr:p2, yr:p3, zr:p4, l1:p5}
+
+    OpenMM::CustomCompoundBondForce * custom_cartesian_pos_rest = new OpenMM::CustomCompoundBondForce(5,"lamrest*0.5*(nrg_xr_l1+nrg_yr_l1+nrg_zr_l1);"
+                                                                                                        "nrg_xr_l1 = k_xr_l1(xr_l1-xr_l1_0)^2;"
+                                                                                                        "nrg_yr_l1 = k_yr_l1(yr_l1-yr_l1_0)^2;"
+                                                                                                        "nrg_zr_l1 = k_zr_l1(zr_l1-zr_l1_0)^2;"
+                                                                                                        "xr_l1 = cos(angle(p5, p1, p2))*distance(p1, p5);"
+                                                                                                        "yr_l1 = cos(angle(p5, p1, p3))*distance(p1, p5);"
+                                                                                                        "zr_l1 = cos(angle(p5, p1, p4))*distance(p1, p5);" 
+    custom_cartesian_pos_rest->addPerBondParameter("k_xr_l1");
+    custom_cartesian_pos_rest->addPerBondParameter("k_yr_l1");
+    custom_cartesian_pos_rest->addPerBondParameter("k_zr_l1");
+    custom_cartesian_pos_rest->addPerBondParameter("xr_l1_0");
+    custom_cartesian_pos_rest->addPerBondParameter("yr_l1_0");
+    custom_cartesian_pos_rest->addPerBondParameter("zr_l1_0");
+    custom_cartesian_pos_rest->setUsesPeriodicBoundaryConditions(true);
+    custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
 
     //OpenMM vector coordinate
     std::vector<OpenMM::Vec3> positions_openmm(nats);
@@ -3046,6 +3065,71 @@ void OpenMMFrEnergyST::initialise()
         }
 
     }//end of Boresch flag
+
+
+    bool UseCartesian_flag = true;
+
+    //Cartesian-based protein-ligand Restaints. All the information is stored in the first molecule only.
+
+    if (UseCartesian_flag == true)
+    {
+        Molecule molecule = moleculegroup.moleculeAt(0).molecule();
+
+        bool has_cartesian_pos_rest = molecule.hasProperty("cartesian_position_restraint");
+        //bool has_cartesian_orient_rest = molecule.hasProperty("cartesian_orientation_restraint");
+
+        if (Debug)
+        {
+            qDebug() << "Cartesian position restraint properties stored = " << has_cartesian_pos_rest;
+            //qDebug() << "Cartesian orientation restraint properties stored = " << has_cartesian_orient_rest;
+        }
+
+        if (has_cartesian_pos_rest)
+        {
+            std::vector<double> custom_cartesian_pos_par(6);
+
+            Properties cartesian_pos_prop = molecule.property("cartesian_position_restraint").asA<Properties>();
+            
+            int r1 = cartesian_pos_prop.property(QString("r1")).asA<VariantProperty>().toInt();
+            int l1 = cartesian_pos_prop.property(QString("l1")).asA<VariantProperty>().toInt();
+            double k_xr_l1 = cartesian_pos_prop.property(QString("k_xr_l1")).asA<VariantProperty>().toDouble();
+            double k_yr_l1 = cartesian_pos_prop.property(QString("k_yr_l1")).asA<VariantProperty>().toDouble();
+            double k_zr_l1 = cartesian_pos_prop.property(QString("k_zr_l1")).asA<VariantProperty>().toDouble();
+            double xr_l1_0 = cartesian_pos_prop.property(QString("xr_l1_0")).asA<VariantProperty>().toDouble();
+            double yr_l1_0 = cartesian_pos_prop.property(QString("yr_l1_0")).asA<VariantProperty>().toDouble();
+            double zr_l1_0 = cartesian_pos_prop.property(QString("zr_l1_0")).asA<VariantProperty>().toDouble();
+
+            int openmmindex_r1 = AtomNumToOpenMMIndex[r1];
+            int openmmindex_l1 = AtomNumToOpenMMIndex[l1];
+            //TODO: FIND xr, yr,zr
+            int openmmindex_xr = 
+            int openmmindex_yr = 
+            int openmmindex_zr = 
+
+            custom_cartesian_pos_par[0] = k_xr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
+            custom_cartesian_pos_par[1] = k_yr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
+            custom_cartesian_pos_par[2] = k_zr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
+            custom_cartesian_pos_par[3] = xr_l1_0 * OpenMM::NmPerAngstrom; //equil val
+            custom_cartesian_pos_par[4] = yr_l1_0 * OpenMM::NmPerAngstrom; //equil val
+            custom_cartesian_pos_par[5] = zr_l1_0 * OpenMM::NmPerAngstrom; //equil val
+
+            if (Debug)
+            {
+                qDebug() << "Cartesian position restraint implemented";
+                qDebug() << "r1 = " << r1 << " openmmindex_r1 =" << openmmindex_r1;
+                qDebug() << "l1 = " << l1 << " openmmindex_l1 =" << openmmindex_l1;
+                qDebug() << "k_xr_l1 = " << k_xr_l1 << " xr_l1_0 = " << xr_l1_0;
+                qDebug() << "k_yr_l1 = " << k_yr_l1 << " yr_l1_0 = " << yr_l1_0;
+                qDebug() << "k_zr_l1 = " << k_zr_l1 << " zr_l1_0 = " << zr_l1_0;
+            }
+
+            custom_cartesian_pos_rest->addBond(openmmindex_r1, openmmindex_xr, openmmindex_yr, openmmindex_zr, openmmindex_l1, custom_cartesian_pos_par);
+
+            system_openmm->addForce(custom_cartesian_pos_rest);
+        }
+
+    }//end of Cartesian flag
+
 
     this->openmm_system = system_openmm;
     this->isSystemInitialised = true;

@@ -3091,7 +3091,12 @@ void OpenMMFrEnergyST::initialise()
             Properties cartesian_pos_prop = molecule.property("cartesian_position_restraint").asA<Properties>();
             
             int r1 = cartesian_pos_prop.property(QString("r1")).asA<VariantProperty>().toInt();
+            int r2 = cartesian_pos_prop.property(QString("r2")).asA<VariantProperty>().toInt();
+            int r3 = cartesian_pos_prop.property(QString("r3")).asA<VariantProperty>().toInt();
             int l1 = cartesian_pos_prop.property(QString("l1")).asA<VariantProperty>().toInt();
+            int xr = cartesian_pos_prop.property(QString("xr")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along xr
+            int yr = cartesian_pos_prop.property(QString("yr")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along yr
+            int zr = cartesian_pos_prop.property(QString("zr")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along zr
             double k_xr_l1 = cartesian_pos_prop.property(QString("k_xr_l1")).asA<VariantProperty>().toDouble();
             double k_yr_l1 = cartesian_pos_prop.property(QString("k_yr_l1")).asA<VariantProperty>().toDouble();
             double k_zr_l1 = cartesian_pos_prop.property(QString("k_zr_l1")).asA<VariantProperty>().toDouble();
@@ -3100,11 +3105,43 @@ void OpenMMFrEnergyST::initialise()
             double zr_l1_0 = cartesian_pos_prop.property(QString("zr_l1_0")).asA<VariantProperty>().toDouble();
 
             int openmmindex_r1 = AtomNumToOpenMMIndex[r1];
+            int openmmindex_r2 = AtomNumToOpenMMIndex[r2];
+            int openmmindex_r3 = AtomNumToOpenMMIndex[r3];
             int openmmindex_l1 = AtomNumToOpenMMIndex[l1];
-            //TODO: FIND xr, yr,zr
-            int openmmindex_xr = 
-            int openmmindex_yr = 
-            int openmmindex_zr = 
+            int openmmindex_xr = AtomNumToOpenMMIndex[xr];
+            int openmmindex_yr = AtomNumToOpenMMIndex[yr];
+            int openmmindex_zr = AtomNumToOpenMMIndex[zr];
+
+            /* Turn xr, yr, and zr dummy atoms into virtual sites in the correct position
+
+            For the receptor-defined coordinate system, r1 gives origin, r2 gives x direction, r3 gives xy plane
+
+            particles: r1, r2, r3
+            originweights: (1.0, 0.0, 0.0)
+            xweights: (-1.0, 1.0, 0.0)
+            yweights: (-1.0, 0.0, 1.0) This will be computed so as to be orthogonal to xdir
+            local positions: xr: (1.0, 0.0, 0.0), yr (0.0, 1.0, 0.0), zr: (0.0, 0.0, 1.0)
+            */
+
+            const std::vector<int> particles(openmmindex_r1, openmmindex_r2, openmmindex_r3)
+            const std::vector<double> originWeights(1.0, 0.0, 0.0)
+            const std::vector<double> xWeights(-1.0, 1.0, 0.0)
+            const std::vector<double> yWeights(-1.0, 0.0, 1.0)
+            const std::vector<double> localPositions_xr(1.0, 0.0, 0.0)
+            const std::vector<double> localPositions_yr(0.0, 1.0, 0.0)
+
+            OpenMM::LocalCoordinatesSite * vsite_xr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
+                                                                                    yWeights, OpenMM::Vec3(1.0, 0.0, 0.0))
+            OpenMM::LocalCoordinatesSite * vsite_yr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
+                                                                                    yWeights, OpenMM::Vec3(0.0, 1.0, 0.0))
+            OpenMM::LocalCoordinatesSite * vsite_zr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
+                                                                                    yWeights, OpenMM::Vec3(0.0, 0.0, 1.0))
+
+            system_openmm->setVirtualSite(openmmindex_xr, vsite_xr);
+            system_openmm->setVirtualSite(openmmindex_yr, vsite_yr);
+            system_openmm->setVirtualSite(openmmindex_zr, vsite_zr);
+
+            // Create the forces which depend on the coordinate system defined above
 
             custom_cartesian_pos_par[0] = k_xr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
             custom_cartesian_pos_par[1] = k_yr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
@@ -3116,7 +3153,15 @@ void OpenMMFrEnergyST::initialise()
             if (Debug)
             {
                 qDebug() << "Cartesian position restraint implemented";
+                qDebug() << "Receptor-defined coordinate system defined using:";
                 qDebug() << "r1 = " << r1 << " openmmindex_r1 =" << openmmindex_r1;
+                qDebug() << "r2 = " << r2 << " openmmindex_r2 =" << openmmindex_r2;
+                qDebug() << "r3 = " << r3 << " openmmindex_r3 =" << openmmindex_r3;
+                qDebug() << "Dummy atoms:";
+                qDebug() << "xr = " << xr << " openmmindex_xr =" << openmmindex_xr;
+                qDebug() << "yr = " << yr << " openmmindex_yr =" << openmmindex_yr;
+                qDebug() << "zr = " << zr << " openmmindex_zr =" << openmmindex_zr;
+
                 qDebug() << "l1 = " << l1 << " openmmindex_l1 =" << openmmindex_l1;
                 qDebug() << "k_xr_l1 = " << k_xr_l1 << " xr_l1_0 = " << xr_l1_0;
                 qDebug() << "k_yr_l1 = " << k_yr_l1 << " yr_l1_0 = " << yr_l1_0;

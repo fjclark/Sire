@@ -223,7 +223,9 @@ cartesian_restraints_dict = Parameter("cartesian restraints dictionary", {},
                                        "equilibrium_values":{ "xr_l1_0":xr_l1_0, "yr_l1_0": yr_l1_0, "zr_l1_0": zr_l1_0}, 
                                        "force_constants":{ "k_xr_l1":k_xr_l1, "k_yr_l1": k_yr_l1, "k_zr_l1": k_zr_l1, 
                                        "k_alpha:k_alpha, "k_beta": k_beta},"reference_frame_rotation":{"phi":phi,"theta":theta,
-                                       "psi":psi}} } TO DO - ADD DETAILED DESCRIPTION OF VARIABLES”””
+                                       "psi":psi},"dummy_atom_indices={"rx":rx,"ry":ry,"rz":rz,"lx":lx,"ly":ly,"lz":lz}} 
+                                       TO DO - ADD DETAILED DESCRIPTION OF VARIABLES
+                                       ”””)
 
 hydrogen_mass_repartitioning_factor = \
     Parameter('hydrogen mass repartitioning factor', 1.0,
@@ -721,6 +723,8 @@ def cartesianPositionRestraintToProperty(cartesian_dict):
         prop.setProperty(f"{equil_val}", VariantProperty(cartesian_dict['equilibrium_values'][f'{equil_val}']))
     for force_const in ["k_xr_l1", "k_yr_l1", "k_zr_l1"]:
         prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
+    for dummy_at in cartesian_dict['dummy_atom_indices']:
+        prop.setProperty(f"{dummy_at}", VariantProperty(cartesian_dict['dummay_atom_indices'][f'{dummy_at}']))
 
     return prop
 

@@ -1244,12 +1244,12 @@ void OpenMMFrEnergyST::initialise()
     // Note that mapping from normal notation to particle numbers is {r1:p1, xr:p2, yr:p3, zr:p4, l1:p5}
 
     OpenMM::CustomCompoundBondForce * custom_cartesian_pos_rest = new OpenMM::CustomCompoundBondForce(5,"lamrest*0.5*(nrg_xr_l1+nrg_yr_l1+nrg_zr_l1);"
-                                                                                                        "nrg_xr_l1 = k_xr_l1(xr_l1-xr_l1_0)^2;"
-                                                                                                        "nrg_yr_l1 = k_yr_l1(yr_l1-yr_l1_0)^2;"
-                                                                                                        "nrg_zr_l1 = k_zr_l1(zr_l1-zr_l1_0)^2;"
+                                                                                                        "nrg_xr_l1 = k_xr_l1*(xr_l1-xr_l1_0)^2;"
+                                                                                                        "nrg_yr_l1 = k_yr_l1*(yr_l1-yr_l1_0)^2;"
+                                                                                                        "nrg_zr_l1 = k_zr_l1*(zr_l1-zr_l1_0)^2;"
                                                                                                         "xr_l1 = cos(angle(p5, p1, p2))*distance(p1, p5);"
                                                                                                         "yr_l1 = cos(angle(p5, p1, p3))*distance(p1, p5);"
-                                                                                                        "zr_l1 = cos(angle(p5, p1, p4))*distance(p1, p5);" 
+                                                                                                        "zr_l1 = cos(angle(p5, p1, p4))*distance(p1, p5);");
     custom_cartesian_pos_rest->addPerBondParameter("k_xr_l1");
     custom_cartesian_pos_rest->addPerBondParameter("k_yr_l1");
     custom_cartesian_pos_rest->addPerBondParameter("k_zr_l1");
@@ -3086,6 +3086,7 @@ void OpenMMFrEnergyST::initialise()
 
         if (has_cartesian_pos_rest)
         {
+            std::vector<int> custom_cartesian_part(5);
             std::vector<double> custom_cartesian_pos_par(6);
 
             Properties cartesian_pos_prop = molecule.property("cartesian_position_restraint").asA<Properties>();
@@ -3123,25 +3124,29 @@ void OpenMMFrEnergyST::initialise()
             local positions: xr: (1.0, 0.0, 0.0), yr (0.0, 1.0, 0.0), zr: (0.0, 0.0, 1.0)
             */
 
-            const std::vector<int> particles(openmmindex_r1, openmmindex_r2, openmmindex_r3)
-            const std::vector<double> originWeights(1.0, 0.0, 0.0)
-            const std::vector<double> xWeights(-1.0, 1.0, 0.0)
-            const std::vector<double> yWeights(-1.0, 0.0, 1.0)
-            const std::vector<double> localPositions_xr(1.0, 0.0, 0.0)
-            const std::vector<double> localPositions_yr(0.0, 1.0, 0.0)
+            const std::vector<int> particles = {openmmindex_r1, openmmindex_r2, openmmindex_r3};
+            const std::vector<double> originWeights = {1.0, 0.0, 0.0};
+            const std::vector<double> xWeights = {-1.0, 1.0, 0.0};
+            const std::vector<double> yWeights = {-1.0, 0.0, 1.0};
 
             OpenMM::LocalCoordinatesSite * vsite_xr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                    yWeights, OpenMM::Vec3(1.0, 0.0, 0.0))
+                                                                                    yWeights, OpenMM::Vec3(1.0, 0.0, 0.0));
             OpenMM::LocalCoordinatesSite * vsite_yr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                    yWeights, OpenMM::Vec3(0.0, 1.0, 0.0))
+                                                                                    yWeights, OpenMM::Vec3(0.0, 1.0, 0.0));
             OpenMM::LocalCoordinatesSite * vsite_zr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                    yWeights, OpenMM::Vec3(0.0, 0.0, 1.0))
+                                                                                    yWeights, OpenMM::Vec3(0.0, 0.0, 1.0));
 
             system_openmm->setVirtualSite(openmmindex_xr, vsite_xr);
             system_openmm->setVirtualSite(openmmindex_yr, vsite_yr);
             system_openmm->setVirtualSite(openmmindex_zr, vsite_zr);
 
             // Create the forces which depend on the coordinate system defined above
+
+            custom_cartesian_part[0] = openmmindex_r1;
+            custom_cartesian_part[1] = openmmindex_xr;
+            custom_cartesian_part[2] = openmmindex_yr;
+            custom_cartesian_part[3] = openmmindex_zr;
+            custom_cartesian_part[4] = openmmindex_l1;
 
             custom_cartesian_pos_par[0] = k_xr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
             custom_cartesian_pos_par[1] = k_yr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
@@ -3168,7 +3173,7 @@ void OpenMMFrEnergyST::initialise()
                 qDebug() << "k_zr_l1 = " << k_zr_l1 << " zr_l1_0 = " << zr_l1_0;
             }
 
-            custom_cartesian_pos_rest->addBond(openmmindex_r1, openmmindex_xr, openmmindex_yr, openmmindex_zr, openmmindex_l1, custom_cartesian_pos_par);
+            custom_cartesian_pos_rest->addBond(custom_cartesian_part, custom_cartesian_pos_par);
 
             system_openmm->addForce(custom_cartesian_pos_rest);
         }

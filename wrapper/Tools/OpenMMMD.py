@@ -727,6 +727,27 @@ def boreschDihedralRestraintsToProperty(boresch_dict):
     return prop
 
 
+def rmsdRestraintToProperty(rmsd_dict):
+    """Generates properties to store information needed to set up the RMSD
+    restraint.
+
+    Args:
+        rmsd_dict (dict): Containts the information required to set up the
+        RMSD restraint.
+
+    Returns:
+        class (properties): The properties required to set up the RMSD restraint.
+    """
+
+    prop = Properties()
+
+    prop.setProperty("resid", VariantProperty(rmsd_dict["resid"]))
+    prop.setProperty("fb_radius", VariantProperty(rmsd_dict["fb_radius"]))
+    prop.setProperty("k", VariantProperty(rmsd_dict["k"]))
+
+    return prop
+
+
 def propertyToAtomNumList(prop):
     list = []
     i = 0

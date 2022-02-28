@@ -213,6 +213,16 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
                                     must be set equal to True in the config file. 
                                     """)
 
+use_boresch_restraints = Parameter("use RMSD restraints", False, 
+                                    """Whether or not to impose flat-bottomed RMSD restraints on the specified molecule""")
+
+rmsd_restraints_dict = Parameter("RMSD restraints dictionary", {}, 
+                                    """Dictionary specifying the residue number of the molecule on which to impose
+                                    RMSD restraints, the flat-bottomed radius (Angstrom), and the force constant (kcal mol-1
+                                    Angstrom -2). Syntax is: {"resid":resid, "fb_radius":fb_radius, "k":k}.
+                                    To use RMSD restraints, "use RMSD restraints" must be set to True in the config file. 
+                                    """)
+
 hydrogen_mass_repartitioning_factor = \
     Parameter('hydrogen mass repartitioning factor', 1.0,
               f'If larger than {HMR_MIN} (maximum is {HMR_MAX}), all hydrogen '

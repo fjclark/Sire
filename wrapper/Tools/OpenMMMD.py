@@ -216,10 +216,10 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
 use_boresch_restraints = Parameter("use RMSD restraints", False, 
                                     """Whether or not to impose flat-bottomed RMSD restraints on the specified molecule""")
 
-rmsd_restraints_dict = Parameter("RMSD restraints dictionary", {}, 
+rmsd_restraint_dict = Parameter("RMSD restraints dictionary", {}, 
                                     """Dictionary specifying the residue number of the molecule on which to impose
                                     RMSD restraints, the flat-bottomed radius (Angstrom), and the force constant (kcal mol-1
-                                    Angstrom -2). Syntax is: {"resid":resid, "fb_radius":fb_radius, "k":k}.
+                                    Angstrom -2). Syntax is: {"rensum":resnum, "fb_radius":fb_radius, "k":k}.
                                     To use RMSD restraints, "use RMSD restraints" must be set to True in the config file. 
                                     """)
 
@@ -741,7 +741,7 @@ def rmsdRestraintToProperty(rmsd_dict):
 
     prop = Properties()
 
-    prop.setProperty("resid", VariantProperty(rmsd_dict["resid"]))
+    prop.setProperty("resnum", VariantProperty(rmsd_dict["resnum"]))
     prop.setProperty("fb_radius", VariantProperty(rmsd_dict["fb_radius"]))
     prop.setProperty("k", VariantProperty(rmsd_dict["k"]))
 
@@ -876,17 +876,18 @@ def setupDistanceRestraints(system, restraints=None):
 
     return system
 
+
 def setupBoreschRestraints(system):
     """Takes initial system and adds information specifying the Boresch
     restraints. The distance, angle, and torsional restraints are stored as
     properties in solute molecule.
 
     Args:
-        system (class 'Sire.System._System.System'): The initial system
+        system (System): The initial system
 
     Returns:
-        class 'Sire.System._System.System': The updated system with
-        Boresch restraint properties stored in mol number 0
+        System: The updated system with
+        Boresch restraint properties stored in the solute.
     """
     molecules = system[MGName("all")].molecules()
 
@@ -923,7 +924,7 @@ def setupBoreschRestraints(system):
             print(f"{anchor}: index {anchors_dict[anchor]-1}")
         sys.exit(-1)
     
-    #Mol number 0 will store all the information related to the Boresch restraints in the system
+    # The solute will store all the information related to the Boresch restraints in the system
     solute = getSolute(system)
     solute = solute.edit().setProperty("boresch_dist_restraint", boreschDistRestraintToProperty(boresch_dict)).commit()
     solute = solute.edit().setProperty("boresch_angle_restraints", boreschAngleRestraintsToProperty(boresch_dict)).commit()
@@ -931,6 +932,44 @@ def setupBoreschRestraints(system):
     system.update(solute)
 
     return system
+
+
+def setupRMSDRestraints(system):
+    """Takes initial system and adds information specifying the RMSD
+    restraint. Information is stored in the solute.
+
+    Args:
+        system (System): The initial system
+
+    Returns:
+        System: The updated system with
+        RMSD restraint information stored in the solute.
+    """
+    # Get RMSD restraint dict in dict form
+    rmsd_dict = dict(rmsd_restraint_dict.val)
+    print(f"RMSD restraint dictionary = {rmsd_dict}")
+    
+    # Search the system for the specified molecule
+    # Create the query string.
+    query = f"mol with resnum {rmsd_dict['resnum']}"
+
+    # Perform the search.
+    search = system.search(query)
+
+    # Make sure there is only one result.
+    if len(search) != 1:
+        msg = ("FATAL! Could not find molecule to apply RMSD restraints to with residue "
+              f"number {rmsd_dict['resnum']} in the input! The system should "
+               "contain a single molecule with this residue number.")
+        raise Exception(msg)
+    
+    # The solute will store all the information related to the RMSD restraints in the system
+    solute = getSolute(system)
+    solute = solute.edit().setProperty("rmsd_restraint", rmsdRestraintToProperty(rmsd_dict)).commit()
+    system.update(solute)
+
+    return system
+
 
 def freezeResidues(system):
 

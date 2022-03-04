@@ -213,7 +213,7 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
                                     must be set equal to True in the config file. 
                                     """)
 
-use_boresch_restraints = Parameter("use RMSD restraints", False, 
+use_rmsd_restraint = Parameter("use RMSD restraints", False, 
                                     """Whether or not to impose flat-bottomed RMSD restraints on the specified molecule""")
 
 rmsd_restraint_dict = Parameter("RMSD restraints dictionary", {}, 
@@ -1729,6 +1729,10 @@ def run():
             print("Setting up Boresch restraints...")
             system = setupBoreschRestraints(system)
 
+        if use_rmsd_restraint.val:
+            print("Setting up RMSD restraint...")
+            system = setupRMSDRestraints(system)
+
         if hydrogen_mass_repartitioning_factor.val > 1.0:
             system = repartitionMasses(system, hmassfactor=hydrogen_mass_repartitioning_factor.val)
 
@@ -1891,6 +1895,10 @@ def runFreeNrg():
         if use_boresch_restraints.val:
             print("Setting up Boresch restraints...")
             system = setupBoreschRestraints(system)
+
+        if use_rmsd_restraint.val:
+            print("Setting up RMSD restraint...")
+            system = setupRMSDRestraints(system)
 
         if hydrogen_mass_repartitioning_factor.val > 1.0:
             system = repartitionMasses(system, hmassfactor=hydrogen_mass_repartitioning_factor.val)

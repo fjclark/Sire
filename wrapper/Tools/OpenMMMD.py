@@ -222,7 +222,7 @@ cartesian_restraints_dict = Parameter("cartesian restraints dictionary", {},
                                        {"l1":l1, "l2":l2, "l3":l3, "r1":r1, "r2":r2, "r3":r3}, 
                                        "equilibrium_values":{ "xr_l1_0":xr_l1_0, "yr_l1_0": yr_l1_0, "zr_l1_0": zr_l1_0}, 
                                        "force_constants":{ "k_xr_l1":k_xr_l1, "k_yr_l1": k_yr_l1, "k_zr_l1": k_zr_l1, 
-                                       "k_alpha:k_alpha, "k_beta": k_beta},"reference_frame_rotation":{"phi":phi,"theta":theta,
+                                       "k_alpha:k_alpha, "k_gamma": k_gamma},"reference_frame_rotation":{"phi":phi,"theta":theta,
                                        "psi":psi},"dummy_atom_indices={"rx":rx,"ry":ry,"rz":rz,"lx":lx,"ly":ly,"lz":lz}} 
                                        TO DO - ADD DETAILED DESCRIPTION OF VARIABLES""")
 
@@ -983,10 +983,10 @@ def setupCartesianRestraints(system):
     restraints. This is stored as properties in molecule number 0.
 
     Args:
-        system (class 'Sire.System._System.System'): The initial system
+        system (System): The initial system
 
     Returns:
-        class 'Sire.System._System.System': The updated system with
+        System: The updated system with
         Cartesian restraint properties stored in mol number 0
     """
     # Get Cartesian restraint dict in dict form
@@ -1001,13 +1001,14 @@ def setupCartesianRestraints(system):
     anchors_dict = cartesian_dict["anchor_points"]
     checkAnchorsPresent(system, anchors_dict)
     
-    #Mol number 0 will store all the information related to the Cartesian restraints in the system
-    mol0 = system[MGName("all")].moleculeAt(0)[0].molecule()
-    mol0 = mol0.edit().setProperty("cartesian_position_restraint", cartesianPositionRestraintToProperty(cartesian_dict)).commit()
+    # The solute will store all the information related to the Boresch restraints in the system
+    solute = getSolute(system)
+    solute = solute.edit().setProperty("cartesian_position_restraint", cartesianPositionRestraintToProperty(cartesian_dict)).commit()
     #mol0 = mol0.edit().setProperty("cartesian_orientation_restraint", cartesianOrientationRestraintToProperty(cartesian_dict)).commit()
-    system.update(mol0)
+    system.update(solute)
 
     return system
+
 
 def freezeResidues(system):
 

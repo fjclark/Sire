@@ -739,7 +739,7 @@ def cartesianPositionRestraintToProperty(cartesian_dict):
         Cartesian restraints
 
     Returns:
-        class 'Sire.Base._Base.Properties': The properties required to
+        Properties: The properties required to
         set up the Cartesian positional restraints.
     """
 
@@ -766,18 +766,19 @@ def cartesianOrientationRestraintToProperty(cartesian_dict):
         Cartesian restraints
 
     Returns:
-        class 'Sire.Base._Base.Properties': The properties required to
-        set up the Cartesian orienational restraint.
+        class Properties: The properties required to
+        set up the Cartesian orienational restraints.
     """
 
-   # for anchor in cartesian_dict['anchor_points']:
-   #     prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
-   # for angle in cartesian_dict['reference_frame_rotation']:
-   #     prop.setProperty(f"{angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{angle}']))
+    prop = Properties()
 
-    #TODO: Implement
+    # Don't need equilibrium values as these are zero (reference frame chosen to make this true)
+    for force_const in ["k_alpah", "k_gamma"]:
+        prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
+    for euler_angle in cartesian_dict["reference_frame_rotation"]:
+        prop.setProperty(f"{euler_angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{euler_angle}']))
 
-    return None
+    return prop
 
 
 def propertyToAtomNumList(prop):
@@ -1004,7 +1005,7 @@ def setupCartesianRestraints(system):
     # The solute will store all the information related to the Boresch restraints in the system
     solute = getSolute(system)
     solute = solute.edit().setProperty("cartesian_position_restraint", cartesianPositionRestraintToProperty(cartesian_dict)).commit()
-    #mol0 = mol0.edit().setProperty("cartesian_orientation_restraint", cartesianOrientationRestraintToProperty(cartesian_dict)).commit()
+    solute = solute.edit().setProperty("cartesian_orientation_restraint", cartesianOrientationRestraintToProperty(cartesian_dict)).commit()
     system.update(solute)
 
     return system

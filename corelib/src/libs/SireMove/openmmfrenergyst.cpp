@@ -1257,6 +1257,21 @@ void OpenMMFrEnergyST::initialise()
     custom_cartesian_pos_rest->setUsesPeriodicBoundaryConditions(true);
     custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
 
+    /****************************************CARTESIAN ORIENTATIONAL POTENTIALS*****************************/
+    // Note that mapping from normal notation to particle numbers is {r1:p1, xr:p2, xl:p3)
+
+    OpenMM::CustomAngleForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomAngleForce("lamrest*0.5*force_const*(theta-equil_val)^2");
+    custom_boresch_angle_rest->addPerAngleParameter("force_const");
+    custom_boresch_angle_rest->addPerAngleParameter("equil_val");
+    custom_boresch_angle_rest->setUsesPeriodicBoundaryConditions(true);
+    custom_boresch_angle_rest->addGlobalParameter("lamrest", Alchemical_value);
+    
+    //OpenMM::CustomCompoundBondForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomCompoundBondForce(3, "lamrest*0.5*k_alpha*angle(p2, p1, p3);");
+
+    //custom_cartesian_pos_rest->addPerBondParameter("k_alpha");
+    //custom_cartesian_pos_rest->setUsesPeriodicBoundaryConditions(true);
+    //custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
+
     //OpenMM vector coordinate
     std::vector<OpenMM::Vec3> positions_openmm(nats);
 
@@ -3093,27 +3108,23 @@ void OpenMMFrEnergyST::initialise()
 
     if (UseCartesian_flag == true)
     {
-        bool found_solute{false};
         for (int i = 0; i < nmols; i++)
         {
             Molecule molecule = moleculegroup.moleculeAt(i).molecule();
 
             bool has_cartesian_pos_rest = molecule.hasProperty("cartesian_position_restraint");
-            //bool has_cartesian_orient_rest = molecule.hasProperty("cartesian_orientation_restraint");
+            bool has_cartesian_orient_rest = molecule.hasProperty("cartesian_orientation_restraint");
 
             if (Debug)
             {
                 qDebug() << "Cartesian position restraint properties stored = " << has_cartesian_pos_rest;
-                //qDebug() << "Cartesian orientation restraint properties stored = " << has_cartesian_orient_rest;
+                qDebug() << "Cartesian orientation restraint properties stored = " << has_cartesian_orient_rest;
             }
 
             if (has_cartesian_pos_rest)
             {
-                found_solute = true; // We have found the solute, but before breaking we must also check
-                                    // if there are Cartesian orientational restraints.
-
-                std::vector<int> custom_cartesian_part(5);
-                std::vector<double> custom_cartesian_pos_par(6);
+                std::vector<int> custom_cartesian_pos_part(5); // Particles on which the positional restraint is based
+                std::vector<double> custom_cartesian_pos_par(6); // Parameters on which the positional restraint is based
 
                 Properties cartesian_pos_prop = molecule.property("cartesian_position_restraint").asA<Properties>();
                 
@@ -3139,28 +3150,27 @@ void OpenMMFrEnergyST::initialise()
                 const auto openmmindex_yr = AtomNumToOpenMMIndex[yr];
                 const auto openmmindex_zr = AtomNumToOpenMMIndex[zr];
 
-                /* Turn xr, yr, and zr dummy atoms into virtual sites in the correct position
+                // Turn xr, yr, and zr dummy atoms into virtual sites in the correct position
 
-                For the receptor-defined coordinate system, r1 gives origin, r2 gives x direction, r3 gives xy plane
+                // For the receptor-defined coordinate system, r1 gives origin, r2 gives x direction, r3 gives xy plane
 
-                particles: r1, r2, r3
-                originweights: (1.0, 0.0, 0.0)
-                xweights: (-1.0, 1.0, 0.0)
-                yweights: (-1.0, 0.0, 1.0) This will be computed so as to be orthogonal to xdir
-                local positions: xr: (1.0, 0.0, 0.0), yr (0.0, 1.0, 0.0), zr: (0.0, 0.0, 1.0)
-                */
+                // particles: r1, r2, r3
+                // originweights: (1.0, 0.0, 0.0)
+                // xweights: (-1.0, 1.0, 0.0)
+                // yweights: (-1.0, 0.0, 1.0) This will be computed so as to be orthogonal to xdir
+                // local positions: xr: (1.0, 0.0, 0.0), yr (0.0, 1.0, 0.0), zr: (0.0, 0.0, 1.0)
 
-                const std::vector<int> particles = {openmmindex_r1, openmmindex_r2, openmmindex_r3};
-                const std::vector<double> originWeights = {1.0, 0.0, 0.0};
-                const std::vector<double> xWeights = {-1.0, 1.0, 0.0};
-                const std::vector<double> yWeights = {-1.0, 0.0, 1.0};
+                const std::vector<int> particles_r = {openmmindex_r1, openmmindex_r2, openmmindex_r3};
+                const std::vector<double> originWeights_r = {1.0, 0.0, 0.0};
+                const std::vector<double> xWeights_r = {-1.0, 1.0, 0.0};
+                const std::vector<double> yWeights_r = {-1.0, 0.0, 1.0};
 
-                OpenMM::LocalCoordinatesSite * vsite_xr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                        yWeights, OpenMM::Vec3(1.0, 0.0, 0.0));
-                OpenMM::LocalCoordinatesSite * vsite_yr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                        yWeights, OpenMM::Vec3(0.0, 1.0, 0.0));
-                OpenMM::LocalCoordinatesSite * vsite_zr = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
-                                                                                        yWeights, OpenMM::Vec3(0.0, 0.0, 1.0));
+                OpenMM::LocalCoordinatesSite * vsite_xr = new OpenMM::LocalCoordinatesSite(particles_r, originWeights_r, xWeights_r,
+                                                                                        yWeights_r, OpenMM::Vec3(1.0, 0.0, 0.0));
+                OpenMM::LocalCoordinatesSite * vsite_yr = new OpenMM::LocalCoordinatesSite(particles_r, originWeights_r, xWeights_r,
+                                                                                        yWeights_r, OpenMM::Vec3(0.0, 1.0, 0.0));
+                OpenMM::LocalCoordinatesSite * vsite_zr = new OpenMM::LocalCoordinatesSite(particles_r, originWeights_r, xWeights_r,
+                                                                                        yWeights_r, OpenMM::Vec3(0.0, 0.0, 1.0));
 
                 system_openmm->setVirtualSite(openmmindex_xr, vsite_xr);
                 system_openmm->setVirtualSite(openmmindex_yr, vsite_yr);
@@ -3168,11 +3178,11 @@ void OpenMMFrEnergyST::initialise()
 
                 // Create the forces which depend on the coordinate system defined above
 
-                custom_cartesian_part[0] = openmmindex_r1;
-                custom_cartesian_part[1] = openmmindex_xr;
-                custom_cartesian_part[2] = openmmindex_yr;
-                custom_cartesian_part[3] = openmmindex_zr;
-                custom_cartesian_part[4] = openmmindex_l1;
+                custom_cartesian_pos_part[0] = openmmindex_r1;
+                custom_cartesian_pos_part[1] = openmmindex_xr;
+                custom_cartesian_pos_part[2] = openmmindex_yr;
+                custom_cartesian_pos_part[3] = openmmindex_zr;
+                custom_cartesian_pos_part[4] = openmmindex_l1;
 
                 custom_cartesian_pos_par[0] = k_xr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
                 custom_cartesian_pos_par[1] = k_yr_l1 * (OpenMM::KJPerKcal * OpenMM::AngstromsPerNm * OpenMM::AngstromsPerNm); //force const
@@ -3199,14 +3209,102 @@ void OpenMMFrEnergyST::initialise()
                     qDebug() << "k_zr_l1 = " << k_zr_l1 << " zr_l1_0 = " << zr_l1_0;
                 }
 
-                custom_cartesian_pos_rest->addBond(custom_cartesian_part, custom_cartesian_pos_par);
+                custom_cartesian_pos_rest->addBond(custom_cartesian_pos_part, custom_cartesian_pos_par);
 
                 system_openmm->addForce(custom_cartesian_pos_rest);
-            }
             
-            if (found_solute) break; // We've found the molecule, exit the outer loop. If a molecule has Cartesian
-                                     // positional restraints it must be the solute, but we cannot break immediately
-                                     // because it may also have Cartesian orientational restraints
+
+                if (has_cartesian_orient_rest) // Nest this within positional restraint section because
+                                               // we assume we will always have positional restraints
+                                               // if we have orientational restraints
+                {
+
+                    std::vector<int> custom_cartesian_orient_part(3); // Particles on which the positional restraint is based
+                    std::vector<double> custom_cartesian_orient_par(2); // Parameters on which the positional restraint is based
+
+                    Properties cartesian_orient_prop = molecule.property("cartesian_orientation_restraint").asA<Properties>();
+                    
+                    const int l2 = cartesian_orient_prop.property(QString("l2")).asA<VariantProperty>().toInt(); // Only need l2 and l3 as other anchors
+                    const int l3 = cartesian_orient_prop.property(QString("l3")).asA<VariantProperty>().toInt(); // already passed into positional restraints
+                    const int xl = cartesian_orient_prop.property(QString("xl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along xl
+                    const int yl = cartesian_orient_prop.property(QString("yl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along yl
+                    const int zl = cartesian_orient_prop.property(QString("zl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along zl
+                    const double k_alpha = cartesian_orient_prop.property(QString("k_alpha")).asA<VariantProperty>().toDouble();
+                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble();
+
+                    const int openmmindex_l2 = AtomNumToOpenMMIndex[l2];
+                    const int openmmindex_l3 = AtomNumToOpenMMIndex[l3];
+                    const int openmmindex_xl = AtomNumToOpenMMIndex[xl];
+                    const int openmmindex_yl = AtomNumToOpenMMIndex[yl];
+                    const int openmmindex_zl = AtomNumToOpenMMIndex[zl];
+
+                    // TODO: Rotate receptor coordinate system by given set of angles
+
+                    // Turn xl, yl, and zl dummy atoms into virtual sites in the correct position
+
+                    // For the ligand-defined coordinate system, r1 gives origin, l1-l2 gives x direction, and l1-l3 gives xy plane
+                    // This gives a coordinate system derived in the same way as for the receptor, but shifted to share the origin
+                    // of the receptor-derived coordinate system
+
+                    // particles: r1, l1, l2, l3
+                    // originweights: (1.0, 0.0, 0.0, 0.0)
+                    // xweights: (0.0, -1.0, 1.0, 0.0)
+                    // yweights: (0.0, -1.0, 0.0, 1.0) This will be computed so as to be orthogonal to xdir
+                    // local positions: xl: (1.0, 0.0, 0.0), yl (0.0, 1.0, 0.0), zl: (0.0, 0.0, 1.0)
+
+                    const std::vector<int> particles_l = {openmmindex_r1, openmmindex_l1, openmmindex_l2, openmmindex_l3};
+                    const std::vector<double> originWeights_l = {1.0, 0.0, 0.0, 0.0};
+                    const std::vector<double> xWeights_l = {0.0, -1.0, 1.0, 0.0};
+                    const std::vector<double> yWeights_l = {0.0, -1.0, 1.0, 0.0};
+
+                    OpenMM::LocalCoordinatesSite * vsite_xl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
+                                                                                            yWeights_l, OpenMM::Vec3(1.0, 0.0, 0.0));
+                    OpenMM::LocalCoordinatesSite * vsite_yl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
+                                                                                            yWeights_l, OpenMM::Vec3(0.0, 1.0, 0.0));
+                    OpenMM::LocalCoordinatesSite * vsite_zl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
+                                                                                            yWeights_l, OpenMM::Vec3(0.0, 0.0, 1.0));
+
+                    system_openmm->setVirtualSite(openmmindex_xl, vsite_xl);
+                    system_openmm->setVirtualSite(openmmindex_yl, vsite_yl);
+                    system_openmm->setVirtualSite(openmmindex_zl, vsite_zl);
+
+                    // Create the forces which depend on the coordinate system defined above
+
+                    custom_cartesian_orient_part[0] = openmmindex_r1;
+                    custom_cartesian_orient_part[1] = openmmindex_xr;
+                    custom_cartesian_orient_part[2] = openmmindex_xl;
+
+                    double force_const{k_alpha};
+                    const double equil_val{0};
+                    //custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[0] = force_const * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[1] = equil_val;
+                    //const std::vector<double> custom_cartesian_orient_par(force_const*OpenMM::KJPerKcal, equil_val); // Parameters on which the positional restraint is based
+
+                    if (Debug)
+                    {
+                        qDebug() << "Cartesian orientational restraint on alpha implemented";
+                        qDebug() << "Receptor-defined coordinate system defined using:";
+                        qDebug() << "l1 = " << l1 << " openmmindex_l1 =" << openmmindex_l1;
+                        qDebug() << "l2 = " << l2 << " openmmindex_l2 =" << openmmindex_l2;
+                        qDebug() << "l3 = " << l3 << " openmmindex_l3 =" << openmmindex_l3;
+                        qDebug() << "Dummy atoms:";
+                        qDebug() << "xl = " << xl << " openmmindex_xl =" << openmmindex_xl;
+                        qDebug() << "yl = " << yl << " openmmindex_yl =" << openmmindex_yl;
+                        qDebug() << "zl = " << zl << " openmmindex_zl =" << openmmindex_zl;
+
+                        qDebug() << "k_alpha = " << k_alpha;
+                    }
+
+                    custom_cartesian_orient_alpha_rest->addAngle(openmmindex_xr, openmmindex_r1, openmmindex_xl, custom_cartesian_orient_par);
+                    //custom_cartesian_orient_alpha_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);
+
+                    system_openmm->addForce(custom_cartesian_orient_alpha_rest);
+                }
+
+                break; // We've found the solute and extracted the necessary information
+
+            }// End of Cartesian positional restraint flag
 
         }// End of loop over molecules in system
 

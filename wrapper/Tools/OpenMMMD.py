@@ -745,13 +745,13 @@ def cartesianPositionRestraintToProperty(cartesian_dict):
 
     prop = Properties()
 
-    for anchor in cartesian_dict['anchor_points']:
+    for anchor in ["r1", "r2", "r3", "l1"]:
         prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
     for equil_val in cartesian_dict['equilibrium_values']:
         prop.setProperty(f"{equil_val}", VariantProperty(cartesian_dict['equilibrium_values'][f'{equil_val}']))
     for force_const in ["k_xr_l1", "k_yr_l1", "k_zr_l1"]:
         prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
-    for dummy_at in cartesian_dict['dummy_atom_indices']:
+    for dummy_at in ["xr", "yr", "zr"]:
         prop.setProperty(f"{dummy_at}", VariantProperty(cartesian_dict['dummy_atom_indices'][f'{dummy_at}']))
 
     return prop
@@ -773,10 +773,14 @@ def cartesianOrientationRestraintToProperty(cartesian_dict):
     prop = Properties()
 
     # Don't need equilibrium values as these are zero (reference frame chosen to make this true)
-    for force_const in ["k_alpah", "k_gamma"]:
+    for anchor in ["l2", "l3"]: # Only need anchors not passed through in for positional restraints
+        prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
+    for force_const in ["k_alpha", "k_gamma"]:
         prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
     for euler_angle in cartesian_dict["reference_frame_rotation"]:
         prop.setProperty(f"{euler_angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{euler_angle}']))
+    for dummy_at in ["xl", "yl", "zl"]:
+        prop.setProperty(f"{dummy_at}", VariantProperty(cartesian_dict['dummy_atom_indices'][f'{dummy_at}']))
 
     return prop
 

@@ -1261,10 +1261,10 @@ void OpenMMFrEnergyST::initialise()
     // Note that mapping from normal notation to particle numbers is {r1:p1, xr:p2, xl:p3)
 
     OpenMM::CustomAngleForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomAngleForce("lamrest*0.5*force_const*(theta-equil_val)^2");
-    custom_boresch_angle_rest->addPerAngleParameter("force_const");
-    custom_boresch_angle_rest->addPerAngleParameter("equil_val");
-    custom_boresch_angle_rest->setUsesPeriodicBoundaryConditions(true);
-    custom_boresch_angle_rest->addGlobalParameter("lamrest", Alchemical_value);
+    custom_cartesian_orient_alpha_rest->addPerAngleParameter("force_const");
+    custom_cartesian_orient_alpha_rest->addPerAngleParameter("equil_val");
+    custom_cartesian_orient_alpha_rest->setUsesPeriodicBoundaryConditions(true);
+    custom_cartesian_orient_alpha_rest->addGlobalParameter("lamrest", Alchemical_value);
     
     //OpenMM::CustomCompoundBondForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomCompoundBondForce(3, "lamrest*0.5*k_alpha*angle(p2, p1, p3);");
 
@@ -3284,7 +3284,7 @@ void OpenMMFrEnergyST::initialise()
                     if (Debug)
                     {
                         qDebug() << "Cartesian orientational restraint on alpha implemented";
-                        qDebug() << "Receptor-defined coordinate system defined using:";
+                        qDebug() << "Ligand-defined coordinate system defined using:";
                         qDebug() << "l1 = " << l1 << " openmmindex_l1 =" << openmmindex_l1;
                         qDebug() << "l2 = " << l2 << " openmmindex_l2 =" << openmmindex_l2;
                         qDebug() << "l3 = " << l3 << " openmmindex_l3 =" << openmmindex_l3;

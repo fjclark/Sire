@@ -3210,7 +3210,6 @@ void OpenMMFrEnergyST::initialise()
                 }
 
                 custom_cartesian_pos_rest->addBond(custom_cartesian_pos_part, custom_cartesian_pos_par);
-
                 system_openmm->addForce(custom_cartesian_pos_rest);
             
 
@@ -3219,8 +3218,7 @@ void OpenMMFrEnergyST::initialise()
                                                // if we have orientational restraints
                 {
 
-                    std::vector<int> custom_cartesian_orient_part(3); // Particles on which the positional restraint is based
-                    std::vector<double> custom_cartesian_orient_par(2); // Parameters on which the positional restraint is based
+                    // First, set up restraint on alpha, which is relatively straightforward
 
                     Properties cartesian_orient_prop = molecule.property("cartesian_orientation_restraint").asA<Properties>();
                     
@@ -3255,7 +3253,7 @@ void OpenMMFrEnergyST::initialise()
                     const std::vector<int> particles_l = {openmmindex_r1, openmmindex_l1, openmmindex_l2, openmmindex_l3};
                     const std::vector<double> originWeights_l = {1.0, 0.0, 0.0, 0.0};
                     const std::vector<double> xWeights_l = {0.0, -1.0, 1.0, 0.0};
-                    const std::vector<double> yWeights_l = {0.0, -1.0, 1.0, 0.0};
+                    const std::vector<double> yWeights_l = {0.0, -1.0, 0.0, 1.0};
 
                     OpenMM::LocalCoordinatesSite * vsite_xl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
                                                                                             yWeights_l, OpenMM::Vec3(1.0, 0.0, 0.0));
@@ -3270,14 +3268,9 @@ void OpenMMFrEnergyST::initialise()
 
                     // Create the forces which depend on the coordinate system defined above
 
-                    custom_cartesian_orient_part[0] = openmmindex_r1;
-                    custom_cartesian_orient_part[1] = openmmindex_xr;
-                    custom_cartesian_orient_part[2] = openmmindex_xl;
-
-                    double force_const{k_alpha};
-                    const double equil_val{0};
-                    //custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
-                    custom_cartesian_orient_par[0] = force_const * OpenMM::KJPerKcal; //force const
+                    const double equil_val{0}; // See if we can get away with removing this in future
+                    std::vector<double> custom_cartesian_orient_par(2); // Parameters on which the positional restraint is based
+                    custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
                     custom_cartesian_orient_par[1] = equil_val;
                     //const std::vector<double> custom_cartesian_orient_par(force_const*OpenMM::KJPerKcal, equil_val); // Parameters on which the positional restraint is based
 
@@ -3298,8 +3291,20 @@ void OpenMMFrEnergyST::initialise()
 
                     custom_cartesian_orient_alpha_rest->addAngle(openmmindex_xr, openmmindex_r1, openmmindex_xl, custom_cartesian_orient_par);
                     //custom_cartesian_orient_alpha_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);
-
                     system_openmm->addForce(custom_cartesian_orient_alpha_rest);
+
+
+                    // Now, set up restraint on gamma, which is relatively convoluted
+
+                    // Create new coordinate system and create virtual site
+
+                    // Calculate the position of this virtual site in the receptor y-z plane
+
+                    // Create two new sites in the receptor y-z plane and feed both to custom force
+
+                    // Create custom force which knows how to work out y - y angle
+
+
                 }
 
                 break; // We've found the solute and extracted the necessary information

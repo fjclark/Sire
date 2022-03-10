@@ -999,8 +999,11 @@ def setupCartesianRestraints(system):
     print(f"Cartesian restraints dictionary = {cartesian_dict}")
 
     # Correct atom numbers by + 1
-    for key in cartesian_dict["anchor_points"].keys():
-        cartesian_dict["anchor_points"][key] += 1
+    for anchor_point in cartesian_dict["anchor_points"]:
+        cartesian_dict["anchor_points"][anchor_point] += 1
+    for dummy_at in cartesian_dict["dummy_atom_indices"]:
+        cartesian_dict["dummy_atom_indices"][dummy_at] += 1
+
 
     # Get anchor points dict and check anchors present
     anchors_dict = cartesian_dict["anchor_points"]

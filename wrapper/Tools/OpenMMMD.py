@@ -779,7 +779,7 @@ def cartesianOrientationRestraintToProperty(cartesian_dict):
         prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
     for euler_angle in cartesian_dict["reference_frame_rotation"]:
         prop.setProperty(f"{euler_angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{euler_angle}']))
-    for dummy_at in ["xl", "yl", "zl"]:
+    for dummy_at in ["xl", "yl", "zl", "ax_rot"]:
         prop.setProperty(f"{dummy_at}", VariantProperty(cartesian_dict['dummy_atom_indices'][f'{dummy_at}']))
 
     return prop

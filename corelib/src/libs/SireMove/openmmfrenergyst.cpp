@@ -1258,7 +1258,7 @@ void OpenMMFrEnergyST::initialise()
     custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
 
     /****************************************CARTESIAN ORIENTATIONAL POTENTIALS*****************************/
-    // Note that mapping from normal notation to particle numbers is {r1:p1, xr:p2, xl:p3)
+    // Mapping from normal notation to particle numbers is {r1:p1, xr:p2, xl:p3)
 
     OpenMM::CustomAngleForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomAngleForce("lamrest*0.5*force_const*(theta-equil_val)^2");
     custom_cartesian_orient_alpha_rest->addPerAngleParameter("force_const");
@@ -1266,11 +1266,21 @@ void OpenMMFrEnergyST::initialise()
     custom_cartesian_orient_alpha_rest->setUsesPeriodicBoundaryConditions(true);
     custom_cartesian_orient_alpha_rest->addGlobalParameter("lamrest", Alchemical_value);
     
-    //OpenMM::CustomCompoundBondForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomCompoundBondForce(3, "lamrest*0.5*k_alpha*angle(p2, p1, p3);");
+    // Mapping from normal notation to particle numbers is {r1:p1, xr:p2, yr:p3, xl:p4, yl:p5, ax_rot:p6}
 
-    //custom_cartesian_pos_rest->addPerBondParameter("k_alpha");
-    //custom_cartesian_pos_rest->setUsesPeriodicBoundaryConditions(true);
-    //custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
+    OpenMM::CustomCompoundBondForce * custom_cartesian_orient_gamma_rest = new OpenMM::CustomCompoundBondForce(6, 
+                                                      "lamrest*0.5*k_gamma*min(gamma, 2*pi - gamma)^2;" // Account for periodic boundary at gamma = 0
+                                                      "gamma = abs(sign_ax_rot_yr * angle(p6, p1, p3) - sign_ax_rot_yl * angle(p6, p1, p5));" // Angle to rotate ax_rot to superimpose on yr
+                                                      // Make this +1 for clockwise rotation if angle(xl, p1, yr) > pi/2, else -1 for anticlockwise
+                                                      "sign_ax_rot_yr = step(angle(p4, p1, p3) - pi/2) - step(-(angle(p4, p1, p3) - pi/2));"
+                                                      // Make this +1 for clockwise rotation if angle(yl, r1, xr) < pi/2, else -1 for anticlockwise
+                                                      "sign_ax_rot_yl = -step(angle(p5, p1, p2) - pi/2) + step(-(angle(p5, p1, p2) - pi/2));"
+                                                      "pi = 3.1415926535;");
+
+    custom_cartesian_orient_gamma_rest->addPerBondParameter("k_gamma");
+    custom_cartesian_orient_gamma_rest->setUsesPeriodicBoundaryConditions(true);
+    custom_cartesian_orient_gamma_rest->addGlobalParameter("lamrest", Alchemical_value);
+
 
     //OpenMM vector coordinate
     std::vector<OpenMM::Vec3> positions_openmm(nats);
@@ -3228,7 +3238,6 @@ void OpenMMFrEnergyST::initialise()
                     const int yl = cartesian_orient_prop.property(QString("yl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along yl
                     const int zl = cartesian_orient_prop.property(QString("zl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along zl
                     const double k_alpha = cartesian_orient_prop.property(QString("k_alpha")).asA<VariantProperty>().toDouble();
-                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble();
 
                     const int openmmindex_l2 = AtomNumToOpenMMIndex[l2];
                     const int openmmindex_l3 = AtomNumToOpenMMIndex[l3];
@@ -3269,9 +3278,9 @@ void OpenMMFrEnergyST::initialise()
                     // Create the forces which depend on the coordinate system defined above
 
                     const double equil_val{0}; // See if we can get away with removing this in future
-                    std::vector<double> custom_cartesian_orient_par(2); // Parameters on which the positional restraint is based
-                    custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
-                    custom_cartesian_orient_par[1] = equil_val;
+                    std::vector<double> custom_cartesian_orient_alpha_par(2); // Parameters on which the positional restraint is based
+                    custom_cartesian_orient_alpha_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_alpha_par[1] = equil_val;
                     //const std::vector<double> custom_cartesian_orient_par(force_const*OpenMM::KJPerKcal, equil_val); // Parameters on which the positional restraint is based
 
                     if (Debug)
@@ -3289,22 +3298,66 @@ void OpenMMFrEnergyST::initialise()
                         qDebug() << "k_alpha = " << k_alpha;
                     }
 
-                    custom_cartesian_orient_alpha_rest->addAngle(openmmindex_xr, openmmindex_r1, openmmindex_xl, custom_cartesian_orient_par);
+                    custom_cartesian_orient_alpha_rest->addAngle(openmmindex_xr, openmmindex_r1, openmmindex_xl, custom_cartesian_orient_alpha_par);
                     //custom_cartesian_orient_alpha_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);
                     system_openmm->addForce(custom_cartesian_orient_alpha_rest);
 
 
-                    // Now, set up restraint on gamma, which is relatively convoluted
+                    // Now, set up restraint on gamma, which is relatively convoluted. Gamma is the angle between the ligand-derived y axis, yl,
+                    // and the receptor-defined y axis, yr, after the ligand-defined coordinate system has been rotated so that alpha = 0.
 
-                    // Create new coordinate system and create virtual site
+                    // Require one further dummy atoms, giving a total of 7 dummy atoms
+                    const int ax_rot = cartesian_orient_prop.property(QString("ax_rot")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along axis of rotation
+                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble(); // Force const
 
-                    // Calculate the position of this virtual site in the receptor y-z plane
+                    const int openmmindex_ax_rot = AtomNumToOpenMMIndex[ax_rot];
 
-                    // Create two new sites in the receptor y-z plane and feed both to custom force
+                    // Create coordinate system where z axis gives the axis of rotation of the ligand coordinate system
+                    // resulting from setting alpha = 0
 
-                    // Create custom force which knows how to work out y - y angle
+                    // For this coordinate system, r1 gives the origin (so all coordinate systems share the same origin),
+                    // r1-xl gives the x-axis, and r1-xr defines the x-y plane. Z gives the axis of rotation, and this
+                    // is where we place the dummy atom ax_rot
 
+                    // particles: r1, r2, l1, l2
+                    // originweights: (1.0, 0.0, 0.0, 0.0)
+                    // xweights: (-1.0, 1.0, 0.0, 0.0)
+                    // yweights: (0.0, 0.0, -1.0, 1.0) This will be computed so as to be orthogonal to xdir
+                    // local position: ax_rot: (0.0, 0.0, 1.0)
 
+                    const std::vector<int> particles_ax_rot = {openmmindex_r1, openmmindex_r2, openmmindex_l1, openmmindex_l2};
+                    const std::vector<double> originWeights_ax_rot = {1.0, 0.0, 0.0, 0.0};
+                    const std::vector<double> xWeights_ax_rot = {-1.0, 1.0, 0.0, 0.0};
+                    const std::vector<double> yWeights_ax_rot = {0.0, 0.0, -1.0, 1.0};
+
+                    OpenMM::LocalCoordinatesSite * vsite_ax_rot = new OpenMM::LocalCoordinatesSite(particles_ax_rot, originWeights_ax_rot,
+                                                                                                   xWeights_ax_rot, yWeights_ax_rot, 
+                                                                                                   OpenMM::Vec3(0.0, 0.0, 1.0));
+                    system_openmm->setVirtualSite(openmmindex_ax_rot, vsite_ax_rot);
+
+                    // Create the forces which depend on the coordinate system defined above
+
+                    std::vector<int> custom_cartesian_orient_gamma_part(6); // Particles on which the gamma restraint is based
+                    std::vector<double> custom_cartesian_orient_gamma_par(1); // Parameters on which the gamma restraint is based
+
+                    custom_cartesian_orient_gamma_part[0] = openmmindex_r1;
+                    custom_cartesian_orient_gamma_part[1] = openmmindex_xr;
+                    custom_cartesian_orient_gamma_part[2] = openmmindex_yr;
+                    custom_cartesian_orient_gamma_part[3] = openmmindex_xl;
+                    custom_cartesian_orient_gamma_part[4] = openmmindex_yl;
+                    custom_cartesian_orient_gamma_part[5] = openmmindex_ax_rot;
+
+                    custom_cartesian_orient_gamma_par[0] = k_gamma * OpenMM::KJPerKcal; //force const
+
+                    if (Debug)
+                    {
+                        qDebug() << "Cartesian orientational restraint on gamma implemented";
+                        qDebug() << "Dummy atoms:";
+                        qDebug() << "ax_rot = " << ax_rot << " openmmindex_ax_rot =" << openmmindex_ax_rot;
+                    }
+
+                    custom_cartesian_orient_gamma_rest->addBond(custom_cartesian_orient_gamma_part, custom_cartesian_orient_gamma_par);
+                    system_openmm->addForce(custom_cartesian_orient_gamma_rest);
                 }
 
                 break; // We've found the solute and extracted the necessary information

@@ -3316,8 +3316,8 @@ void OpenMMFrEnergyST::initialise()
                     // resulting from setting alpha = 0
 
                     // For this coordinate system, r1 gives the origin (so all coordinate systems share the same origin),
-                    // r1-xl gives the x-axis, and r1-xr defines the x-y plane. Z gives the axis of rotation, and this
-                    // is where we place the dummy atom ax_rot
+                    // r1-r2(xr direction) gives the x-axis, and l1-l2 (xl direction) defines the x-y plane. Z gives the 
+                    // axis of rotation, and this is where we place the dummy atom ax_rot.
 
                     // particles: r1, r2, l1, l2
                     // originweights: (1.0, 0.0, 0.0, 0.0)

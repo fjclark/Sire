@@ -222,8 +222,9 @@ cartesian_restraints_dict = Parameter("cartesian restraints dictionary", {},
                                        {"l1":l1, "l2":l2, "l3":l3, "r1":r1, "r2":r2, "r3":r3}, 
                                        "equilibrium_values":{ "xr_l1_0":xr_l1_0, "yr_l1_0": yr_l1_0, "zr_l1_0": zr_l1_0}, 
                                        "force_constants":{ "k_xr_l1":k_xr_l1, "k_yr_l1": k_yr_l1, "k_zr_l1": k_zr_l1, 
-                                       "k_alpha:k_alpha, "k_gamma": k_gamma},"reference_frame_rotation":{"phi":phi,"theta":theta,
-                                       "psi":psi},"dummy_atom_indices={"rx":rx,"ry":ry,"rz":rz,"lx":lx,"ly":ly,"lz":lz}} 
+                                       "k_alpha:k_alpha, "k_delta": k_delta "k_gamma": k_gamma},"reference_frame_rotation":{"xl_ref":
+                                       {"xl_ref_xl": xl_ref_xl, "xl_ref_yl": xl_ref_yl, "xl_ref_zl": xl_ref_zl}, "yl_ref":{...}, zl_ref:{...}},
+                                       "dummy_atom_indices={"rx":rx,"ry":ry,"rz":rz,"lx":lx,"ly":ly,"lz":lz}} 
                                        TO DO - ADD DETAILED DESCRIPTION OF VARIABLES""")
 
 hydrogen_mass_repartitioning_factor = \
@@ -775,11 +776,12 @@ def cartesianOrientationRestraintToProperty(cartesian_dict):
     # Don't need equilibrium values as these are zero (reference frame chosen to make this true)
     for anchor in ["l2", "l3"]: # Only need anchors not passed through in for positional restraints
         prop.setProperty(f"{anchor}", VariantProperty(cartesian_dict['anchor_points'][f'{anchor}']))
-    for force_const in ["k_alpha", "k_gamma"]:
+    for force_const in ["k_alpha", "k_delta", "k_gamma"]:
         prop.setProperty(f"{force_const}", VariantProperty(cartesian_dict['force_constants'][f'{force_const}']))
-    for euler_angle in cartesian_dict["reference_frame_rotation"]:
-        prop.setProperty(f"{euler_angle}", VariantProperty(cartesian_dict['reference_frame_rotation'][f'{euler_angle}']))
-    for dummy_at in ["xl", "yl", "zl", "ax_rot"]:
+    for ref_coord in cartesian_dict["reference_frame_rotation"]:
+        for ref_coord_component in cartesian_dict["reference_frame_rotation"][ref_coord]:
+            prop.setProperty(ref_coord_component, VariantProperty(cartesian_dict['reference_frame_rotation'][ref_coord][ref_coord_component]))
+    for dummy_at in ["xl", "yl", "zl"]:
         prop.setProperty(f"{dummy_at}", VariantProperty(cartesian_dict['dummy_atom_indices'][f'{dummy_at}']))
 
     return prop

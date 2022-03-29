@@ -1257,29 +1257,63 @@ void OpenMMFrEnergyST::initialise()
     custom_cartesian_pos_rest->setUsesPeriodicBoundaryConditions(true);
     custom_cartesian_pos_rest->addGlobalParameter("lamrest", Alchemical_value);
 
-    /****************************************CARTESIAN ORIENTATIONAL POTENTIALS*****************************/
-    // Mapping from normal notation to particle numbers is {r1:p1, xr:p2, xl:p3)
+    /****************************************CARTESIAN ORIENTATIONAL POTENTIAL*****************************/
+    // Mapping from normal notation to particle numbers is {r1:p1, xr:p2, yr:p3, zr:p4, xl:p5, yl:p6, zl:p7}
+    // Restrain the proper Euler angles, 
 
-    OpenMM::CustomAngleForce * custom_cartesian_orient_alpha_rest = new OpenMM::CustomAngleForce("lamrest*0.5*force_const*(theta-equil_val)^2");
-    custom_cartesian_orient_alpha_rest->addPerAngleParameter("force_const");
-    custom_cartesian_orient_alpha_rest->addPerAngleParameter("equil_val");
-    custom_cartesian_orient_alpha_rest->setUsesPeriodicBoundaryConditions(true);
-    custom_cartesian_orient_alpha_rest->addGlobalParameter("lamrest", Alchemical_value);
-    
-    // Mapping from normal notation to particle numbers is {r1:p1, xr:p2, yr:p3, xl:p4, yl:p5, ax_rot:p6}
+    OpenMM::CustomCompoundBondForce * custom_cartesian_orient_rest = new OpenMM::CustomCompoundBondForce(7, 
+                                                    "lamrest * 0.5 * (nrg_phi + nrg_theta + nrg_psi);" 
+                                                    // Following notation on wikpedia: https://en.wikipedia.org/wiki/Euler_angles and  
+                                                    // factoring as RzRyRz (see https://www.geometrictools.com/Documentation/EulerAngles.pdf)
 
-    OpenMM::CustomCompoundBondForce * custom_cartesian_orient_gamma_rest = new OpenMM::CustomCompoundBondForce(6, 
-                                                      "lamrest*0.5*k_gamma*min(gamma, 2*pi - gamma)^2;" // Account for periodic boundary at gamma = 0
-                                                      "gamma = abs(sign_ax_rot_yr * angle(p6, p1, p3) - sign_ax_rot_yl * angle(p6, p1, p5));" // Angle to rotate ax_rot to superimpose on yr
-                                                      // Make this +1 for clockwise rotation if angle(xl, p1, yr) > pi/2, else -1 for anticlockwise
-                                                      "sign_ax_rot_yr = step(angle(p4, p1, p3) - pi/2) - step(-(angle(p4, p1, p3) - pi/2));"
-                                                      // Make this +1 for clockwise rotation if angle(yl, r1, xr) < pi/2, else -1 for anticlockwise
-                                                      "sign_ax_rot_yl = -step(angle(p5, p1, p2) - pi/2) + step(-(angle(p5, p1, p2) - pi/2));"
-                                                      "pi = 3.1415926535;");
+                                                    // Define harmonic potentials
+                                                    "nrg_phi = k_alpha*phi^2;"
+                                                    "nrg_theta = k_delta*theta^2;" 
+                                                    "nrg_psi = k_gamma*psi^2;"
 
-    custom_cartesian_orient_gamma_rest->addPerBondParameter("k_gamma");
-    custom_cartesian_orient_gamma_rest->setUsesPeriodicBoundaryConditions(true);
-    custom_cartesian_orient_gamma_rest->addGlobalParameter("lamrest", Alchemical_value);
+                                                    // Define Euler angles
+                                                    "psi = atan2(Y_1, X_1);" // [-pi, pi]
+                                                    "theta = asin(-Z_1);" // [0, pi]
+                                                    "phi = atan2(Z_2, Z_3);" // [-pi, pi]
+
+                                                    // Define components of ligand coordinate system with respect to receptor coordinate system
+                                                    "X_1 = cos(angle(p5, p1, p2));" // Component of xl in xr
+                                                    "Y_1 = cos(angle(p6, p1, p2));" // Component of yl in xr
+                                                    "X_1 = cos(angle(p7, p1, p4));" // Component of xl in xr
+                                                    "Z_1 = cos(angle(p7, p1, p2));" // Component of zl in xr
+                                                    "Z_2 = cos(angle(p7, p1, p3));" // Component of zl in yr
+                                                    "Z_3 = cos(angle(p7, p1, p4));" // Component of zl in zr
+                                                    );
+
+                                                    //"lamrest * 0.5 * (nrg_alpha + nrg_delta + nrg_gamma);" // Beta renamed delta to avoid confusion with 1/kT
+                                                    // Following notation on wikpedia: https://en.wikipedia.org/wiki/Euler_angles  
+
+                                                    //// Define harmonic potentials
+                                                    //"nrg_alpha = k_alpha*alpha^2;"
+                                                    //"nrg_delta = k_delta*delta^2;" 
+                                                    //"nrg_gamma = k_gamma*gamma^2;"
+
+                                                    //// Define Euler angles
+                                                    //"alpha = atan(-Z_1/Z_2);" // [-pi, pi]
+                                                    ////"alpha = acos(-Z_2/(sqrt(1-Z_3^2)));" // [-pi, pi]
+                                                    //"delta = angle(p7, p1, p4);" // Can calculate this directly [0, pi]
+                                                    //"gamma = atan2(X_3, Y_3);" // [-pi, pi]
+
+                                                    //// Define components of ligand coordinate system with respect to receptor coordinate system
+                                                    //// Need to calculate angles in range [0, ] 
+                                                    //"Z_1 = cos(angle(p7, p1, p2));" // Component of zl in xr
+                                                    //"X_3 = cos(angle(p5, p1, p4));" // Component of xl in zr
+                                                    //"Y_3 = cos(angle(p6, p1, p4));" // Component of yl in zr
+                                                    //"Z_1 = cos(angle(p7, p1, p2));" // Component of zl in xr
+                                                    //"Z_2 = cos(angle(p7, p1, p3));" // Component of zl in yr
+                                                    //"Z_3 = cos(angle(p7, p1, p4));" // Component of zl in zr
+                                                    //);
+
+    custom_cartesian_orient_rest->addPerBondParameter("k_alpha");
+    custom_cartesian_orient_rest->addPerBondParameter("k_delta");
+    custom_cartesian_orient_rest->addPerBondParameter("k_gamma");
+    custom_cartesian_orient_rest->setUsesPeriodicBoundaryConditions(true);
+    custom_cartesian_orient_rest->addGlobalParameter("lamrest", Alchemical_value);
 
 
     //OpenMM vector coordinate
@@ -3232,12 +3266,28 @@ void OpenMMFrEnergyST::initialise()
 
                     Properties cartesian_orient_prop = molecule.property("cartesian_orientation_restraint").asA<Properties>();
                     
+                    // Indices of remaining atoms needed to define ligand coordinate system
                     const int l2 = cartesian_orient_prop.property(QString("l2")).asA<VariantProperty>().toInt(); // Only need l2 and l3 as other anchors
                     const int l3 = cartesian_orient_prop.property(QString("l3")).asA<VariantProperty>().toInt(); // already passed into positional restraints
+                    // Indices of dummy atoms to be used to define coordinate system
                     const int xl = cartesian_orient_prop.property(QString("xl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along xl
                     const int yl = cartesian_orient_prop.property(QString("yl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along yl
                     const int zl = cartesian_orient_prop.property(QString("zl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along zl
+                    // Force constants
                     const double k_alpha = cartesian_orient_prop.property(QString("k_alpha")).asA<VariantProperty>().toDouble();
+                    const double k_delta = cartesian_orient_prop.property(QString("k_delta")).asA<VariantProperty>().toDouble(); // Rename beta delta to avoid
+                                                                                                                                 // confusion with 1/kT
+                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble(); 
+                    // Coordinates of reference ligand coordinate system as defined in original ligand coordinate system 
+                    const double xl_ref_xl = cartesian_orient_prop.property(QString("xl_ref_xl")).asA<VariantProperty>().toDouble(); 
+                    const double xl_ref_yl = cartesian_orient_prop.property(QString("xl_ref_yl")).asA<VariantProperty>().toDouble(); 
+                    const double xl_ref_zl = cartesian_orient_prop.property(QString("xl_ref_zl")).asA<VariantProperty>().toDouble(); 
+                    const double yl_ref_xl = cartesian_orient_prop.property(QString("yl_ref_xl")).asA<VariantProperty>().toDouble(); 
+                    const double yl_ref_yl = cartesian_orient_prop.property(QString("yl_ref_yl")).asA<VariantProperty>().toDouble(); 
+                    const double yl_ref_zl = cartesian_orient_prop.property(QString("yl_ref_zl")).asA<VariantProperty>().toDouble(); 
+                    const double zl_ref_xl = cartesian_orient_prop.property(QString("zl_ref_xl")).asA<VariantProperty>().toDouble(); 
+                    const double zl_ref_yl = cartesian_orient_prop.property(QString("zl_ref_yl")).asA<VariantProperty>().toDouble(); 
+                    const double zl_ref_zl = cartesian_orient_prop.property(QString("zl_ref_zl")).asA<VariantProperty>().toDouble(); 
 
                     const int openmmindex_l2 = AtomNumToOpenMMIndex[l2];
                     const int openmmindex_l3 = AtomNumToOpenMMIndex[l3];
@@ -3245,13 +3295,10 @@ void OpenMMFrEnergyST::initialise()
                     const int openmmindex_yl = AtomNumToOpenMMIndex[yl];
                     const int openmmindex_zl = AtomNumToOpenMMIndex[zl];
 
-                    // TODO: Rotate receptor coordinate system by given set of angles
-
-                    // Turn xl, yl, and zl dummy atoms into virtual sites in the correct position
-
                     // For the ligand-defined coordinate system, r1 gives origin, l1-l2 gives x direction, and l1-l3 gives xy plane
                     // This gives a coordinate system derived in the same way as for the receptor, but shifted to share the origin
-                    // of the receptor-derived coordinate system
+                    // of the receptor-derived coordinate system. The coordinate system is them reorientated so that it lines up
+                    // with the receptor coordinate system and the Euler angles are zero on average.
 
                     // particles: r1, l1, l2, l3
                     // originweights: (1.0, 0.0, 0.0, 0.0)
@@ -3264,12 +3311,15 @@ void OpenMMFrEnergyST::initialise()
                     const std::vector<double> xWeights_l = {0.0, -1.0, 1.0, 0.0};
                     const std::vector<double> yWeights_l = {0.0, -1.0, 0.0, 1.0};
 
-                    OpenMM::LocalCoordinatesSite * vsite_xl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
-                                                                                            yWeights_l, OpenMM::Vec3(1.0, 0.0, 0.0));
-                    OpenMM::LocalCoordinatesSite * vsite_yl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
-                                                                                            yWeights_l, OpenMM::Vec3(0.0, 1.0, 0.0));
-                    OpenMM::LocalCoordinatesSite * vsite_zl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, xWeights_l,
-                                                                                            yWeights_l, OpenMM::Vec3(0.0, 0.0, 1.0));
+                    OpenMM::LocalCoordinatesSite * vsite_xl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, 
+                                                                                               xWeights_l, yWeights_l, 
+                                                                                               OpenMM::Vec3(xl_ref_xl, xl_ref_yl, xl_ref_zl));
+                    OpenMM::LocalCoordinatesSite * vsite_yl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l, 
+                                                                                               xWeights_l, yWeights_l, 
+                                                                                               OpenMM::Vec3(yl_ref_xl, yl_ref_yl, yl_ref_zl));
+                    OpenMM::LocalCoordinatesSite * vsite_zl = new OpenMM::LocalCoordinatesSite(particles_l, originWeights_l,
+                                                                                               xWeights_l, yWeights_l,
+                                                                                               OpenMM::Vec3(zl_ref_xl, zl_ref_yl, zl_ref_zl));
 
                     system_openmm->setVirtualSite(openmmindex_xl, vsite_xl);
                     system_openmm->setVirtualSite(openmmindex_yl, vsite_yl);
@@ -3277,87 +3327,53 @@ void OpenMMFrEnergyST::initialise()
 
                     // Create the forces which depend on the coordinate system defined above
 
-                    const double equil_val{0}; // See if we can get away with removing this in future
-                    std::vector<double> custom_cartesian_orient_alpha_par(2); // Parameters on which the positional restraint is based
-                    custom_cartesian_orient_alpha_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
-                    custom_cartesian_orient_alpha_par[1] = equil_val;
-                    //const std::vector<double> custom_cartesian_orient_par(force_const*OpenMM::KJPerKcal, equil_val); // Parameters on which the positional restraint is based
+                    std::vector<int> custom_cartesian_orient_part(7); // Particles on which the gamma restraint is based
+                    std::vector<double> custom_cartesian_orient_par(3); // Parameters on which the oreintational restraints
+                                                                        // depend (force constants)
+
+                    custom_cartesian_orient_part[0] = openmmindex_r1;
+                    custom_cartesian_orient_part[1] = openmmindex_xr;
+                    custom_cartesian_orient_part[2] = openmmindex_yr;
+                    custom_cartesian_orient_part[3] = openmmindex_zr;
+                    custom_cartesian_orient_part[4] = openmmindex_xl;
+                    custom_cartesian_orient_part[5] = openmmindex_yl;
+                    custom_cartesian_orient_part[6] = openmmindex_zl;
+
+                    custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[1] = k_delta * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[2] = k_gamma * OpenMM::KJPerKcal; //force const
 
                     if (Debug)
                     {
-                        qDebug() << "Cartesian orientational restraint on alpha implemented";
+                        qDebug() << "Cartesian orientational restraint implemented";
                         qDebug() << "Ligand-defined coordinate system defined using:";
                         qDebug() << "l1 = " << l1 << " openmmindex_l1 =" << openmmindex_l1;
+                        qDebug() << "l2 = " << l2 << " openmmindex_l2 =" << openmmindex_l2;
+                        qDebug() << "l3 = " << l3 << " openmmindex_l3 =" << openmmindex_l3;
+                        qDebug() << "Ligand reference coordinate system positions:";
+                        qDebug() << "xl_ref_xl " << xl_ref_xl;
+                        qDebug() << "xl_ref_yl " << xl_ref_yl;
+                        qDebug() << "xl_ref_zl " << xl_ref_zl;
+                        qDebug() << "yl_ref_xl " << yl_ref_xl;
+                        qDebug() << "yl_ref_yl " << yl_ref_yl;
+                        qDebug() << "yl_ref_zl " << yl_ref_zl;
+                        qDebug() << "zl_ref_xl " << zl_ref_xl;
+                        qDebug() << "zl_ref_yl " << zl_ref_yl;
+                        qDebug() << "zl_ref_zl " << zl_ref_zl;
                         qDebug() << "l2 = " << l2 << " openmmindex_l2 =" << openmmindex_l2;
                         qDebug() << "l3 = " << l3 << " openmmindex_l3 =" << openmmindex_l3;
                         qDebug() << "Dummy atoms:";
                         qDebug() << "xl = " << xl << " openmmindex_xl =" << openmmindex_xl;
                         qDebug() << "yl = " << yl << " openmmindex_yl =" << openmmindex_yl;
                         qDebug() << "zl = " << zl << " openmmindex_zl =" << openmmindex_zl;
-
+                        qDebug() << "Force constants:";
                         qDebug() << "k_alpha = " << k_alpha;
+                        qDebug() << "k_delta = " << k_delta;
+                        qDebug() << "k_gamma = " << k_gamma;
                     }
 
-                    custom_cartesian_orient_alpha_rest->addAngle(openmmindex_xr, openmmindex_r1, openmmindex_xl, custom_cartesian_orient_alpha_par);
-                    //custom_cartesian_orient_alpha_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);
-                    system_openmm->addForce(custom_cartesian_orient_alpha_rest);
-
-
-                    // Now, set up restraint on gamma, which is relatively convoluted. Gamma is the angle between the ligand-derived y axis, yl,
-                    // and the receptor-defined y axis, yr, after the ligand-defined coordinate system has been rotated so that alpha = 0.
-
-                    // Require one further dummy atoms, giving a total of 7 dummy atoms
-                    const int ax_rot = cartesian_orient_prop.property(QString("ax_rot")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along axis of rotation
-                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble(); // Force const
-
-                    const int openmmindex_ax_rot = AtomNumToOpenMMIndex[ax_rot];
-
-                    // Create coordinate system where z axis gives the axis of rotation of the ligand coordinate system
-                    // resulting from setting alpha = 0
-
-                    // For this coordinate system, r1 gives the origin (so all coordinate systems share the same origin),
-                    // r1-r2(xr direction) gives the x-axis, and l1-l2 (xl direction) defines the x-y plane. Z gives the 
-                    // axis of rotation, and this is where we place the dummy atom ax_rot.
-
-                    // particles: r1, r2, l1, l2
-                    // originweights: (1.0, 0.0, 0.0, 0.0)
-                    // xweights: (-1.0, 1.0, 0.0, 0.0)
-                    // yweights: (0.0, 0.0, -1.0, 1.0) This will be computed so as to be orthogonal to xdir
-                    // local position: ax_rot: (0.0, 0.0, 1.0)
-
-                    const std::vector<int> particles_ax_rot = {openmmindex_r1, openmmindex_r2, openmmindex_l1, openmmindex_l2};
-                    const std::vector<double> originWeights_ax_rot = {1.0, 0.0, 0.0, 0.0};
-                    const std::vector<double> xWeights_ax_rot = {-1.0, 1.0, 0.0, 0.0};
-                    const std::vector<double> yWeights_ax_rot = {0.0, 0.0, -1.0, 1.0};
-
-                    OpenMM::LocalCoordinatesSite * vsite_ax_rot = new OpenMM::LocalCoordinatesSite(particles_ax_rot, originWeights_ax_rot,
-                                                                                                   xWeights_ax_rot, yWeights_ax_rot, 
-                                                                                                   OpenMM::Vec3(0.0, 0.0, 1.0));
-                    system_openmm->setVirtualSite(openmmindex_ax_rot, vsite_ax_rot);
-
-                    // Create the forces which depend on the coordinate system defined above
-
-                    std::vector<int> custom_cartesian_orient_gamma_part(6); // Particles on which the gamma restraint is based
-                    std::vector<double> custom_cartesian_orient_gamma_par(1); // Parameters on which the gamma restraint is based
-
-                    custom_cartesian_orient_gamma_part[0] = openmmindex_r1;
-                    custom_cartesian_orient_gamma_part[1] = openmmindex_xr;
-                    custom_cartesian_orient_gamma_part[2] = openmmindex_yr;
-                    custom_cartesian_orient_gamma_part[3] = openmmindex_xl;
-                    custom_cartesian_orient_gamma_part[4] = openmmindex_yl;
-                    custom_cartesian_orient_gamma_part[5] = openmmindex_ax_rot;
-
-                    custom_cartesian_orient_gamma_par[0] = k_gamma * OpenMM::KJPerKcal; //force const
-
-                    if (Debug)
-                    {
-                        qDebug() << "Cartesian orientational restraint on gamma implemented";
-                        qDebug() << "Dummy atoms:";
-                        qDebug() << "ax_rot = " << ax_rot << " openmmindex_ax_rot =" << openmmindex_ax_rot;
-                    }
-
-                    custom_cartesian_orient_gamma_rest->addBond(custom_cartesian_orient_gamma_part, custom_cartesian_orient_gamma_par);
-                    system_openmm->addForce(custom_cartesian_orient_gamma_rest);
+                    custom_cartesian_orient_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);
+                    system_openmm->addForce(custom_cartesian_orient_rest);
                 }
 
                 break; // We've found the solute and extracted the necessary information

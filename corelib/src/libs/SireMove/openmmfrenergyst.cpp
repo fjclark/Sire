@@ -1267,9 +1267,9 @@ void OpenMMFrEnergyST::initialise()
                                                     // factoring as RzRyRz (see https://www.geometrictools.com/Documentation/EulerAngles.pdf)
 
                                                     // Define harmonic potentials
-                                                    "nrg_phi = k_alpha*phi^2;"
-                                                    "nrg_theta = k_delta*theta^2;" 
-                                                    "nrg_psi = k_gamma*psi^2;"
+                                                    "nrg_phi = k_phi*phi^2;"
+                                                    "nrg_theta = k_thteta*theta^2;" 
+                                                    "nrg_psi = k_psi*psi^2;"
 
                                                     // Define Euler angles
                                                     "psi = atan2(Y_1, X_1);" // [-pi, pi]
@@ -1285,33 +1285,9 @@ void OpenMMFrEnergyST::initialise()
                                                     "Z_3 = cos(angle(p7, p1, p4));" // Component of zl in zr
                                                     );
 
-                                                    //"lamrest * 0.5 * (nrg_alpha + nrg_delta + nrg_gamma);" // Beta renamed delta to avoid confusion with 1/kT
-                                                    // Following notation on wikpedia: https://en.wikipedia.org/wiki/Euler_angles  
-
-                                                    //// Define harmonic potentials
-                                                    //"nrg_alpha = k_alpha*alpha^2;"
-                                                    //"nrg_delta = k_delta*delta^2;" 
-                                                    //"nrg_gamma = k_gamma*gamma^2;"
-
-                                                    //// Define Euler angles
-                                                    //"alpha = atan(-Z_1/Z_2);" // [-pi, pi]
-                                                    ////"alpha = acos(-Z_2/(sqrt(1-Z_3^2)));" // [-pi, pi]
-                                                    //"delta = angle(p7, p1, p4);" // Can calculate this directly [0, pi]
-                                                    //"gamma = atan2(X_3, Y_3);" // [-pi, pi]
-
-                                                    //// Define components of ligand coordinate system with respect to receptor coordinate system
-                                                    //// Need to calculate angles in range [0, ] 
-                                                    //"Z_1 = cos(angle(p7, p1, p2));" // Component of zl in xr
-                                                    //"X_3 = cos(angle(p5, p1, p4));" // Component of xl in zr
-                                                    //"Y_3 = cos(angle(p6, p1, p4));" // Component of yl in zr
-                                                    //"Z_1 = cos(angle(p7, p1, p2));" // Component of zl in xr
-                                                    //"Z_2 = cos(angle(p7, p1, p3));" // Component of zl in yr
-                                                    //"Z_3 = cos(angle(p7, p1, p4));" // Component of zl in zr
-                                                    //);
-
-    custom_cartesian_orient_rest->addPerBondParameter("k_alpha");
-    custom_cartesian_orient_rest->addPerBondParameter("k_delta");
-    custom_cartesian_orient_rest->addPerBondParameter("k_gamma");
+    custom_cartesian_orient_rest->addPerBondParameter("k_phi");
+    custom_cartesian_orient_rest->addPerBondParameter("k_theta");
+    custom_cartesian_orient_rest->addPerBondParameter("k_psi");
     custom_cartesian_orient_rest->setUsesPeriodicBoundaryConditions(true);
     custom_cartesian_orient_rest->addGlobalParameter("lamrest", Alchemical_value);
 
@@ -3262,8 +3238,6 @@ void OpenMMFrEnergyST::initialise()
                                                // if we have orientational restraints
                 {
 
-                    // First, set up restraint on alpha, which is relatively straightforward
-
                     Properties cartesian_orient_prop = molecule.property("cartesian_orientation_restraint").asA<Properties>();
                     
                     // Indices of remaining atoms needed to define ligand coordinate system
@@ -3274,10 +3248,10 @@ void OpenMMFrEnergyST::initialise()
                     const int yl = cartesian_orient_prop.property(QString("yl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along yl
                     const int zl = cartesian_orient_prop.property(QString("zl")).asA<VariantProperty>().toInt(); // Index of dummy atom to be placed along zl
                     // Force constants
-                    const double k_alpha = cartesian_orient_prop.property(QString("k_alpha")).asA<VariantProperty>().toDouble();
-                    const double k_delta = cartesian_orient_prop.property(QString("k_delta")).asA<VariantProperty>().toDouble(); // Rename beta delta to avoid
+                    const double k_phi = cartesian_orient_prop.property(QString("k_phi")).asA<VariantProperty>().toDouble();
+                    const double k_theta = cartesian_orient_prop.property(QString("k_theta")).asA<VariantProperty>().toDouble(); // Rename beta delta to avoid
                                                                                                                                  // confusion with 1/kT
-                    const double k_gamma = cartesian_orient_prop.property(QString("k_gamma")).asA<VariantProperty>().toDouble(); 
+                    const double k_psi = cartesian_orient_prop.property(QString("k_psi")).asA<VariantProperty>().toDouble(); 
                     // Coordinates of reference ligand coordinate system as defined in original ligand coordinate system 
                     const double xl_ref_xl = cartesian_orient_prop.property(QString("xl_ref_xl")).asA<VariantProperty>().toDouble(); 
                     const double xl_ref_yl = cartesian_orient_prop.property(QString("xl_ref_yl")).asA<VariantProperty>().toDouble(); 
@@ -3327,8 +3301,8 @@ void OpenMMFrEnergyST::initialise()
 
                     // Create the forces which depend on the coordinate system defined above
 
-                    std::vector<int> custom_cartesian_orient_part(7); // Particles on which the gamma restraint is based
-                    std::vector<double> custom_cartesian_orient_par(3); // Parameters on which the oreintational restraints
+                    std::vector<int> custom_cartesian_orient_part(7); // Particles on which the orientational restraint is based
+                    std::vector<double> custom_cartesian_orient_par(3); // Parameters on which the orienational restraints
                                                                         // depend (force constants)
 
                     custom_cartesian_orient_part[0] = openmmindex_r1;
@@ -3339,9 +3313,9 @@ void OpenMMFrEnergyST::initialise()
                     custom_cartesian_orient_part[5] = openmmindex_yl;
                     custom_cartesian_orient_part[6] = openmmindex_zl;
 
-                    custom_cartesian_orient_par[0] = k_alpha * OpenMM::KJPerKcal; //force const
-                    custom_cartesian_orient_par[1] = k_delta * OpenMM::KJPerKcal; //force const
-                    custom_cartesian_orient_par[2] = k_gamma * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[0] = k_phi * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[1] = k_theta * OpenMM::KJPerKcal; //force const
+                    custom_cartesian_orient_par[2] = k_psi * OpenMM::KJPerKcal; //force const
 
                     if (Debug)
                     {
@@ -3367,9 +3341,9 @@ void OpenMMFrEnergyST::initialise()
                         qDebug() << "yl = " << yl << " openmmindex_yl =" << openmmindex_yl;
                         qDebug() << "zl = " << zl << " openmmindex_zl =" << openmmindex_zl;
                         qDebug() << "Force constants:";
-                        qDebug() << "k_alpha = " << k_alpha;
-                        qDebug() << "k_delta = " << k_delta;
-                        qDebug() << "k_gamma = " << k_gamma;
+                        qDebug() << "k_phi = " << k_phi;
+                        qDebug() << "k_theta = " << k_theta;
+                        qDebug() << "k_psi = " << k_psi;
                     }
 
                     custom_cartesian_orient_rest->addBond(custom_cartesian_orient_part, custom_cartesian_orient_par);

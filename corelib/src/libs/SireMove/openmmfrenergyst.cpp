@@ -1268,7 +1268,7 @@ void OpenMMFrEnergyST::initialise()
 
                                                     // Define harmonic potentials
                                                     "nrg_phi = k_phi*phi^2;"
-                                                    "nrg_theta = k_thteta*theta^2;" 
+                                                    "nrg_theta = k_theta*theta^2;" 
                                                     "nrg_psi = k_psi*psi^2;"
 
                                                     // Define Euler angles

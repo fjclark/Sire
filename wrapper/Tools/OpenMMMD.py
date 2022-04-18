@@ -202,6 +202,8 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
                                                           "phiA0":phiA0, "phiB0": phiB0, "phiC0":phiC0},
                                     "force_constants":{"kr":kr, "kthetaA": kthetaA, "kthetaB": kthetaB,
                                                        "kphiA":kphiA, "kphiB": kphiB, "kphiC":kphiC}
+                                    "offset":{"r1_rotation":r1_rotation, "l1_rotation": l1_rotation}
+                                    "dummy_atom_indices":{"dr2": dr2, "dr3":dr3, "dl2":dl2, "dl3":dl3}
                                     } 
                                     r1 - 3 and l1 - 3 are the anchor points in the receptor and ligand, respectively, 
                                     given by atomic indices. r is | l1 - r1 | (A). thetaA, and thetaB are the angles
@@ -209,8 +211,10 @@ boresch_restraints_dict = Parameter("boresch restraints dictionary", {},
                                     (r3, r2, r1, l1), (r2, r1, l1, l2), and (r1, l1, l2, l3), respectively. A first 
                                     character of k indicates a force constant (kcal mol^-1 A^-2 for the distance and 
                                     kcal mol^-1 rad^-2 for the angles) and a final character of 0 indicates an
-                                    equillibrium value (A or rad). To use Boresch restraints, "use boresch restraints" 
-                                    must be set equal to True in the config file. 
+                                    equillibrium value (A or rad). Offset (in radians) indicates the angle about r1 or l1 
+                                    (in the r1-r2-r3 or l1-l2-l3 planes) which r2 and r3 (l2 and l3) should be rotated 
+                                    to ensure equilibrium bond angles of pi/2 rad. To use Boresch restraints, 
+                                    "use boresch restraints" must be set equal to True in the config file. 
                                     """)
 
 hydrogen_mass_repartitioning_factor = \
@@ -658,24 +662,29 @@ def boreschAngleRestraintsToProperty(boresch_dict):
         class 'Sire.Base._Base.Properties': The properties required to
         set up the Boresch angle restraints 
     """
-
     prop = Properties()
 
-    angle_anchor_dict = {"thetaA":["r2", "r1", "l1"], "thetaB":["r1", "l1", "l2"]}
+    # Lookup indices in dictionary including dummy atom indices
+    indices_dict = dict(boresch_dict["anchor_points"], **boresch_dict["dummy_atom_indices"])
+    # Offset if there is a non-zero offset angle
+    offset = True in [bool(x) for x in list(boresch_dict["offset"].values())]
 
-    i = 0
-    for angle in ["thetaA", "thetaB"]:
+    angle_anchor_dict = {"thetaA":["r2", "r1", "l1"], "thetaB":["r1", "l1", "l2"]}
+    if offset: # Use offset dummies instead of original anchors
+        angle_anchor_dict = {"thetaA":["dr2", "r1", "l1"], "thetaB":["r1", "l1", "dl2"]}
+
+    # Set standard properties for angle restraints. 0 related to receptor (r) and 1
+    # relates to ligand (l)
+    for i, angle in enumerate(["thetaA", "thetaB"]):
         if boresch_dict["force_constants"][f"k{angle}"] != 0:
             for j in range(3): 
                 prop.setProperty(f"AtomNum{j}-{i}", 
-                    VariantProperty(boresch_dict['anchor_points'][angle_anchor_dict[angle][j]]))
+                    VariantProperty(indices_dict[angle_anchor_dict[angle][j]]))
             prop.setProperty(f"equil_val-{i}", 
                 VariantProperty(boresch_dict["equilibrium_values"][f"{angle}0"]))
             prop.setProperty(f"force_const-{i}", 
                 VariantProperty(boresch_dict["force_constants"][f"k{angle}"]))
-            
-            i += 1
-            
+
     prop.setProperty("n_boresch_angle_restraints", VariantProperty(i));
 
     return prop
@@ -693,18 +702,25 @@ def boreschDihedralRestraintsToProperty(boresch_dict):
         class 'Sire.Base._Base.Properties': The properties required to
         set up the Boresch dihedral restraints 
     """
-
     prop = Properties()
+
+    # Lookup indices in dictionary including dummy atom indices
+    indices_dict = dict(boresch_dict["anchor_points"], **boresch_dict["dummy_atom_indices"])
+    # Offset if there is a non-zero offset angle
+    offset = True in [bool(x) for x in list(boresch_dict["offset"].values())]
 
     dihedral_anchor_dict = {"phiA":["r3", "r2", "r1", "l1"], "phiB":["r2", "r1", "l1", "l2"],
                             "phiC":["r1", "l1", "l2", "l3"]}
+    if offset:
+        dihedral_anchor_dict = {"phiA":["dr3", "dr2", "r1", "l1"], "phiB":["dr2", "r1", "l1", "dl2"],
+                                "phiC":["r1", "l1", "dl2", "dl3"]}
 
     i = 0
     for dihedral in ["phiA", "phiB", "phiC"]:
         if boresch_dict["force_constants"][f"k{dihedral}"] != 0:
             for j in range(4): 
                 prop.setProperty(f"AtomNum{j}-{i}", 
-                    VariantProperty(boresch_dict['anchor_points'][dihedral_anchor_dict[dihedral][j]]))
+                    VariantProperty(indices_dict[dihedral_anchor_dict[dihedral][j]]))
             prop.setProperty(f"equil_val-{i}", 
                 VariantProperty(boresch_dict["equilibrium_values"][f"{dihedral}0"]))
             prop.setProperty(f"force_const-{i}", 
@@ -713,6 +729,36 @@ def boreschDihedralRestraintsToProperty(boresch_dict):
             i += 1
             
     prop.setProperty("n_boresch_dihedral_restraints", VariantProperty(i));
+
+    return prop
+
+
+def boreschOffsetToProperty(boresch_dict): 
+    """Generates properties to store information needed to create offset anchor
+    atoms to ensure equilibrium bond angle is pi/2 rad.
+
+    Args:
+        boresch_dict (dict): Containts the information required to set up all
+        Boresch restraints
+
+    Returns:
+        class 'Sire.Base._Base.Properties': The properties required to
+        set up the Boresch angle restraints 
+    """
+    prop = Properties()
+
+    for i, ident in enumerate(["r", "l"]):
+        # Anchor atoms
+        for anchor_no in range(1,4):
+            prop.setProperty(f"AnchorPoint{anchor_no}-{i}", 
+                VariantProperty(boresch_dict["anchor_points"][f"{ident}{anchor_no}"]))
+        # Dummy atoms
+        for j in range(2,4):
+            prop.setProperty(f"dummy_atom_idx-{j}-{i}", 
+                VariantProperty(boresch_dict["dummy_atom_indices"][f"d{ident}{j}"]))
+        # Rotation
+        prop.setProperty(f"rotation-{i}", 
+            VariantProperty(boresch_dict["offset"][f"{ident}1_rotation"]))
 
     return prop
 
@@ -899,6 +945,7 @@ def setupBoreschRestraints(system):
     solute = solute.edit().setProperty("boresch_dist_restraint", boreschDistRestraintToProperty(boresch_dict)).commit()
     solute = solute.edit().setProperty("boresch_angle_restraints", boreschAngleRestraintsToProperty(boresch_dict)).commit()
     solute = solute.edit().setProperty("boresch_dihedral_restraints", boreschDihedralRestraintsToProperty(boresch_dict)).commit()
+    solute = solute.edit().setProperty("boresch_offset", boreschOffsetToProperty(boresch_dict)).commit()
     system.update(solute)
 
     return system

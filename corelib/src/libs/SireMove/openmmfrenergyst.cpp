@@ -2935,13 +2935,84 @@ void OpenMMFrEnergyST::initialise()
             bool has_boresch_dist = molecule.hasProperty("boresch_dist_restraint");
             bool has_boresch_angle = molecule.hasProperty("boresch_angle_restraints");
             bool has_boresch_dihedral = molecule.hasProperty("boresch_dihedral_restraints");
+            bool is_offset = molecule.hasProperty("boresch_offset");
 
             if (Debug)
             {
                 qDebug() << "Boresch distance restraint properties stored = " << has_boresch_dist;
                 qDebug() << "Boresch angle restraint properties stored = " << has_boresch_angle;
                 qDebug() << "Boresch dihedral restraint properties stored = " << has_boresch_dihedral;
+                qDebug() << "Boresch anchors offset = " << has_boresch_dihedral;
             }
+
+            if (is_offset)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    const auto boresch_offset_prop = molecule.property("boresch_offset").asA<Properties>();
+
+                    const auto anchorpoint1 = boresch_offset_prop.property(QString("AnchorPoint1-%1").arg(i)).asA<VariantProperty>().toInt();
+                    const auto anchorpoint2 = boresch_offset_prop.property(QString("AnchorPoint2-%1").arg(i)).asA<VariantProperty>().toInt();
+                    const auto anchorpoint3 = boresch_offset_prop.property(QString("AnchorPoint3-%1").arg(i)).asA<VariantProperty>().toInt();
+                    const auto atomnum_d2 = boresch_offset_prop.property(QString("dummy_atom_idx-2-%1").arg(i)).asA<VariantProperty>().toInt();
+                    const auto atomnum_d3 = boresch_offset_prop.property(QString("dummy_atom_idx-3-%1").arg(i)).asA<VariantProperty>().toInt();
+                    const auto rotation = boresch_offset_prop.property(QString("rotation-%1").arg(i)).asA<VariantProperty>().toDouble();
+
+                    const auto openmmindex_anchor1 = AtomNumToOpenMMIndex[anchorpoint1];
+                    const auto openmmindex_anchor2 = AtomNumToOpenMMIndex[anchorpoint2];
+                    const auto openmmindex_anchor3 = AtomNumToOpenMMIndex[anchorpoint3];
+                    const auto openmmindex_d2 = AtomNumToOpenMMIndex[atomnum_d2];
+                    const auto openmmindex_d3 = AtomNumToOpenMMIndex[atomnum_d3];
+
+                    if (Debug)
+                    {
+                        qDebug() << "Boresch anchor points offset";
+                        qDebug() << "anchorpoint1 = " << anchorpoint1 << " openmmindex_anchor1 =" << openmmindex_anchor1;
+                        qDebug() << "anchorpoint2 = " << anchorpoint2 << " openmmindex_anchor2 =" << openmmindex_anchor2;
+                        qDebug() << "anchorpoint3 = " << anchorpoint3 << " openmmindex_anchor3 =" << openmmindex_anchor3;
+                        qDebug() << "atomnum_d2 = " << atomnum_d2 << " openmmindex_d2 =" << openmmindex_d2;
+                        qDebug() << "atomnum_d3 = " << atomnum_d3 << " openmmindex_d3 =" << openmmindex_d3;
+                        qDebug() << "rotation = " << rotation;
+                    }
+
+                    // Turn d2 and d3 dummy atoms into virtual sites in the correct position. For the receptor, r1 gives the 
+                    // origin of the coordinate system, r1-r2 gives the x direction, and r1-r3 defines the x-y plane. The same 
+                    // is true for the ligand.
+
+                    // particles: r1, r2, r3 (or l1, l2, l3)
+                    // originweights: (1.0, 0.0, 0.0)
+                    // xweights: (-1.0, 1.0, 0.0)
+                    // yweights: (-1.0, 0.0, 1.0) This will be computed so as to be orthogonal to xdir
+
+                    // Create coordinate system
+                    const std::vector<int> particles = {openmmindex_anchor1, openmmindex_anchor2, openmmindex_anchor3};
+                    const std::vector<double> originWeights = {1.0, 0.0, 0.0};
+                    const std::vector<double> xWeights = {-1.0, 1.0, 0.0};
+                    const std::vector<double> yWeights = {-1.0, 0.0, 1.0}; // recalculated to make orthogonal to x
+
+                    // Calculate positions of dummy atoms based on rotation angles. Use convention that rotation angle 
+                    // is anti-clockwise.
+
+                    // r1-r2 (l1-l2) distance does not change Boresch degrees of freedom. Can therefore place d2 1 unit along x axis
+                    // (before rotation)
+                    // Also, movement of r3 (l3) in the r1-r2-r3 (l1-l2-l3) plane does not change the Boresch degrees of freedom. Can 
+                    // therefore place d3 1 unit along the y axis (before rotation)
+
+                    const std::vector<double> rotated_anchor2{cos(rotation), sin(rotation)}; // Components in anchor1-2-3 plane
+                    const std::vector<double> rotated_anchor3{-sin(rotation), cos(rotation)}; // Components in anchor1-2-3 plane
+
+                    OpenMM::LocalCoordinatesSite * vsite_d2 = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
+                                                                                            yWeights, OpenMM::Vec3(rotated_anchor2[0],
+                                                                                                                   rotated_anchor2[1],
+                                                                                                                   0.0));
+                    OpenMM::LocalCoordinatesSite * vsite_d3 = new OpenMM::LocalCoordinatesSite(particles, originWeights, xWeights,
+                                                                                            yWeights, OpenMM::Vec3(rotated_anchor3[0],
+                                                                                                                   rotated_anchor3[1],
+                                                                                                                   0.0));
+                    system_openmm->setVirtualSite(openmmindex_d2, vsite_d2);
+                    system_openmm->setVirtualSite(openmmindex_d3, vsite_d3);
+                }
+            }            
 
             if (has_boresch_dist)
             {

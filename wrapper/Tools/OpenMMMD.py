@@ -911,9 +911,11 @@ def setupBoreschRestraints(system):
     # Correct atom numbers by + 1
     for key in boresch_dict["anchor_points"].keys():
         boresch_dict["anchor_points"][key] += 1
+    for key in boresch_dict["dummy_atom_indices"].keys():
+        boresch_dict["dummy_atom_indices"][key] += 1
 
     # Get anchor points dicts
-    anchors_dict = boresch_dict["anchor_points"]
+    anchors_dict = dict(boresch_dict["anchor_points"], **boresch_dict["dummy_atom_indices"])
     
     molecules = system[MGName("all")].molecules()
     moleculeNumbers = molecules.molNums()

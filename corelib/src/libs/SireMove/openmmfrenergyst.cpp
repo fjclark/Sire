@@ -3940,7 +3940,7 @@ void OpenMMFrEnergyST::integrate(IntegratorWorkspace &workspace,
         //*********************MD STEPS****************************
         (openmm_context->getIntegrator()).step(energy_frequency);
         state_openmm = openmm_context->getState(infoMask, false, 0x01);
-        double p_energy_lambda = state_openmm.getPotentialEnergy();
+        double p_energy_lambda = state_openmm.getPotentialEnergy()+state_openmm.getKineticEnergy();
         if (Debug)
         {
             printf("Lambda = %f Potential energy = %.5f kcal/mol\n", Alchemical_value, p_energy_lambda * OpenMM::KcalPerKJ);
@@ -3996,7 +3996,7 @@ void OpenMMFrEnergyST::integrate(IntegratorWorkspace &workspace,
         }
 
         //Computing the potential energies and gradients
-        p_energy_lambda = state_openmm.getPotentialEnergy();
+        p_energy_lambda = state_openmm.getPotentialEnergy()+state_openmm.getKineticEnergy();
 
 
         //Let's calculate the gradients

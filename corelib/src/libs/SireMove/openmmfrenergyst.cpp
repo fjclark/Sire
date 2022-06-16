@@ -1212,6 +1212,23 @@ void OpenMMFrEnergyST::initialise()
 
     /****************************************BOND LINK POTENTIAL*****************************/
     /* FC 12/21 CustomBondForce now (OpenMM 7.4.0) allows application of PBC checks*/
+    
+    // First, check if we are in turn on receptor-ligand restraint mode
+
+    bool turn_on_restraints_mode{false};
+
+    for (int i = 0; i < nmols; i++)
+    {
+        Molecule molecule = moleculegroup.moleculeAt(i).molecule();
+
+        if (molecule.hasProperty("turn_on_restraints_mode"))
+        {
+            turn_on_restraints_mode = true; //Lambda will be used to turn on the receptor-ligand restraints
+            if (Debug)
+                qDebug() << "Lambda will be used to turn on the receptor-ligand restraints";
+            break; // We've found the solute - exit loop over molecules in system.
+        }
+    }
 
     OpenMM::CustomBondForce * custom_link_bond = new OpenMM::CustomBondForce("(lamrest^5)*kl*max(0,d-dl*dl);"
                                                                              "d=(r-reql)*(r-reql)");
@@ -1221,7 +1238,7 @@ void OpenMMFrEnergyST::initialise()
     custom_link_bond->setUsesPeriodicBoundaryConditions(true);
     // If in turn on receptor-ligand restraints mode, default value of lamrest needs to be lambda, because
     // the default value is used for the first nrg_freq timesteps before being set by updateOpenMMContextLambda
-    if (perturbed_energies[8])
+    if (turn_on_restraints_mode)
         custom_link_bond->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_link_bond->addGlobalParameter("lamrest", 1);
@@ -1241,7 +1258,7 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_dist_rest->addPerBondParameter("force_const");
     custom_boresch_dist_rest->addPerBondParameter("equil_val");
     custom_boresch_dist_rest->setUsesPeriodicBoundaryConditions(true);
-    if (perturbed_energies[8])
+    if (turn_on_restraints_mode)
         custom_boresch_dist_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_dist_rest->addGlobalParameter("lamrest", 1);
@@ -1252,7 +1269,7 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_angle_rest->addPerAngleParameter("force_const");
     custom_boresch_angle_rest->addPerAngleParameter("equil_val");
     custom_boresch_angle_rest->setUsesPeriodicBoundaryConditions(true);
-    if (perturbed_energies[8])
+    if (turn_on_restraints_mode)
         custom_boresch_angle_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_angle_rest->addGlobalParameter("lamrest", 1);
@@ -1264,7 +1281,7 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_dihedral_rest->addPerTorsionParameter("force_const");
     custom_boresch_dihedral_rest->addPerTorsionParameter("equil_val");
     custom_boresch_dihedral_rest->setUsesPeriodicBoundaryConditions(true);
-    if (perturbed_energies[8])
+    if (turn_on_restraints_mode)
         custom_boresch_dihedral_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_dihedral_rest->addGlobalParameter("lamrest", 1);

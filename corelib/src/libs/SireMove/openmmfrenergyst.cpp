@@ -2916,6 +2916,17 @@ void OpenMMFrEnergyST::initialise()
 
             if (molecule.hasProperty("linkbonds"))
             {
+                // If in turn on receptor-ligand restraints mode, must ensure lambda is set to Alchemical_value
+                // rather than the default of 1
+                if (molecule.hasProperty("turn_on_restraints_mode"))
+                {
+                    openmm_context->setParameter("lamrest", Alchemical_value); //Receptor-ligand restraints
+                    if (Debug)
+                    {
+                        qDebug() << "In turn-on receptor-ligand restraint mode: lamrest set to: "<< Alchemical_value;
+                    }
+                }
+
                 std::vector<double> custom_bond_link_par(3);
 
                 const auto linkprop = molecule.property("linkbonds").asA<Properties>();
@@ -2970,16 +2981,6 @@ void OpenMMFrEnergyST::initialise()
 
             if (molecule.hasProperty("permanent_linkbonds"))
             {
-                // If in turn on receptor-ligand restraints mode, must ensure lambda is set to Alchemical_value
-                // rather than the default of 1
-                if (molecule.hasProperty("turn_on_restraints_mode"))
-                {
-                    openmm_context->setParameter("lamrest", Alchemical_value); //Receptor-ligand restraints
-                    if (Debug)
-                    {
-                        qDebug() << "In turn-on receptor-ligand restraint mode: lamrest set to: "<< Alchemical_value;
-                    }
-                }
                 std::vector<double> custom_bond_link_par(3);
 
                 const auto linkprop = molecule.property("permanent_linkbonds").asA<Properties>();
@@ -3318,9 +3319,7 @@ void OpenMMFrEnergyST::initialise()
                 system_openmm->addForce(custom_permanent_boresch_dihedral_rest);
             }
         
-            if (found_solute) break; // We've found the molecule, exit the outer loop. If a molecule has Boresch
-                                     // distance restraints it must be the solute, but we cannot break immediately
-                                     // because it may also have angle/ dihedral restraints
+        if (found_solute) break; // We've found the molecule.
 
         }// End of loop over molecules in system
 

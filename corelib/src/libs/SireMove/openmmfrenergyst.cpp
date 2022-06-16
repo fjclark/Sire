@@ -2920,17 +2920,11 @@ void OpenMMFrEnergyST::initialise()
             qDebug() << "Added Perturbed Internal Angle energy term";
     }
 
-    for (int i = 0; i < nmols; i++)
+    if (turn_on_restraints_mode)
     {
-        Molecule molecule = moleculegroup.moleculeAt(i).molecule();
-
-        if (molecule.hasProperty("turn_on_restraints_mode"))
-        {
-            perturbed_energies_tmp[8] = true; //Lambda will be used to turn on the receptor-ligand restraints
-            if (Debug)
-                qDebug() << "Lambda will be used to turn on the receptor-ligand restraints";
-            break; // We've found the solute - exit loop over molecules in system.
-        }
+        perturbed_energies_tmp[8] = true; //Lambda will be used to turn on the receptor-ligand restraints
+        if (Debug)
+            qDebug() << "Added Perturbed Receptor-Ligand Restraint energy term";
     }
 
     perturbed_energies = perturbed_energies_tmp;

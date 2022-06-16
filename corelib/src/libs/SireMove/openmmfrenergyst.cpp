@@ -1219,16 +1219,12 @@ void OpenMMFrEnergyST::initialise()
     custom_link_bond->addPerBondParameter("kl");
     custom_link_bond->addPerBondParameter("dl");
     custom_link_bond->setUsesPeriodicBoundaryConditions(true);
-<<<<<<< HEAD
-    custom_link_bond->addGlobalParameter("lamrest", 1);
-=======
     // If in turn on receptor-ligand restraints mode, default value of lamrest needs to be lambda, because
     // the default value is used for the first nrg_freq timesteps before being set by updateOpenMMContextLambda
     if (perturbed_energies[8])
         custom_link_bond->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_link_bond->addGlobalParameter("lamrest", 1);
->>>>>>> parent of b3a3f1e3... Add debug output for default value of lamrest
 
     /****************************************PERMANENT BOND LINK POTENTIAL*****************************/
 
@@ -1245,29 +1241,21 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_dist_rest->addPerBondParameter("force_const");
     custom_boresch_dist_rest->addPerBondParameter("equil_val");
     custom_boresch_dist_rest->setUsesPeriodicBoundaryConditions(true);
-<<<<<<< HEAD
-    custom_boresch_dist_rest->addGlobalParameter("lamrest", 1);
-=======
     if (perturbed_energies[8])
         custom_boresch_dist_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_dist_rest->addGlobalParameter("lamrest", 1);
 
->>>>>>> parent of b3a3f1e3... Add debug output for default value of lamrest
     /****************************************BORESCH ANGLE POTENTIAL*****************************/
 
     OpenMM::CustomAngleForce * custom_boresch_angle_rest = new OpenMM::CustomAngleForce("(lamrest^5)*0.5*force_const*(theta-equil_val)^2");
     custom_boresch_angle_rest->addPerAngleParameter("force_const");
     custom_boresch_angle_rest->addPerAngleParameter("equil_val");
     custom_boresch_angle_rest->setUsesPeriodicBoundaryConditions(true);
-<<<<<<< HEAD
-    custom_boresch_angle_rest->addGlobalParameter("lamrest", 1);
-=======
     if (perturbed_energies[8])
         custom_boresch_angle_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_angle_rest->addGlobalParameter("lamrest", 1);
->>>>>>> parent of b3a3f1e3... Add debug output for default value of lamrest
 
     /****************************************BORESCH DIHEDRAL POTENTIAL*****************************/
 
@@ -1276,14 +1264,10 @@ void OpenMMFrEnergyST::initialise()
     custom_boresch_dihedral_rest->addPerTorsionParameter("force_const");
     custom_boresch_dihedral_rest->addPerTorsionParameter("equil_val");
     custom_boresch_dihedral_rest->setUsesPeriodicBoundaryConditions(true);
-<<<<<<< HEAD
-    custom_boresch_dihedral_rest->addGlobalParameter("lamrest", 1);
-=======
     if (perturbed_energies[8])
         custom_boresch_dihedral_rest->addGlobalParameter("lamrest", Alchemical_value);
     // We are not in turn on receptor-ligand restraints mode - set lamrest to 1
     else custom_boresch_dihedral_rest->addGlobalParameter("lamrest", 1);
->>>>>>> parent of b3a3f1e3... Add debug output for default value of lamrest
 
     /****************************************PERMANENT BORESCH DISTANCE POTENTIAL*****************************/
 

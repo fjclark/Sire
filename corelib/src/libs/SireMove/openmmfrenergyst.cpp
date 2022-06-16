@@ -2948,17 +2948,6 @@ void OpenMMFrEnergyST::initialise()
 
             if (molecule.hasProperty("linkbonds"))
             {
-                // If in turn on receptor-ligand restraints mode, must ensure lambda is set to Alchemical_value
-                // rather than the default of 1
-                if (molecule.hasProperty("turn_on_restraints_mode"))
-                {
-                    openmm_context->setParameter("lamrest", Alchemical_value); //Receptor-ligand restraints
-                    if (Debug)
-                    {
-                        qDebug() << "In turn-on receptor-ligand restraint mode: lamrest set to: "<< Alchemical_value;
-                    }
-                }
-
                 std::vector<double> custom_bond_link_par(3);
 
                 const auto linkprop = molecule.property("linkbonds").asA<Properties>();
@@ -3082,17 +3071,6 @@ void OpenMMFrEnergyST::initialise()
             {
                 found_solute = true; // We have found the solute, but before breaking we must also check
                                     // if there are Boresch angle and torsion restraints.
-
-                // If in turn on receptor-ligand restraints mode, must ensure lambda is set to Alchemical_value
-                // rather than the default of 1
-                if (molecule.hasProperty("turn_on_restraints_mode"))
-                {
-                    openmm_context->setParameter("lamrest", Alchemical_value); //Receptor-ligand restraints
-                    if (Debug)
-                    {
-                        qDebug() << "In turn-on receptor-ligand restraint mode: lamrest set to: "<< Alchemical_value;
-                    }
-                }
 
                 std::vector<double> custom_boresch_dist_par(2);
 

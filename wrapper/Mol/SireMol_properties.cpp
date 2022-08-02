@@ -16,6 +16,7 @@
 #include "evaluator.h"
 #include "moleculeinfodata.h"
 #include "moleculeview.h"
+#include "mover.hpp"
 #include "tostring.h"
 #include "atommatcher.h"
 #include "SireBase/errors.h"
@@ -56,6 +57,7 @@
 #include "moleditor.h"
 #include "mover.hpp"
 #include "residuecutting.h"
+#include "selector.hpp"
 #include <QMutex>
 #include "cuttingfunction.h"
 #include "SireBase/incremint.h"
@@ -66,6 +68,7 @@
 #include "SireMol/errors.h"
 #include "SireStream/datastream.h"
 #include "SireStream/shareddatastream.h"
+#include "core.h"
 #include "editor.hpp"
 #include "mgname.h"
 #include "mgnum.h"
@@ -84,6 +87,7 @@
 #include <QVector>
 #include <boost/tuple/tuple.hpp>
 #include "moleculegroup.h"
+#include "SireBase/slice.h"
 #include "SireError/errors.h"
 #include "SireMol/errors.h"
 #include "SireStream/datastream.h"
@@ -118,6 +122,7 @@
 #include <QMutex>
 #include "moleculegroups.h"
 #include "SireBase/errors.h"
+#include "SireBase/slice.h"
 #include "SireError/errors.h"
 #include "SireMol/errors.h"
 #include "SireStream/datastream.h"
@@ -138,6 +143,7 @@
 #include "SireCAS/values.h"
 #include "SireStream/datastream.h"
 #include "SireStream/shareddatastream.h"
+#include "core.h"
 #include "geometryperturbation.h"
 #include "molecule.h"
 #include "moleditor.h"
@@ -147,6 +153,7 @@
 #include "SireStream/datastream.h"
 #include "SireStream/shareddatastream.h"
 #include "atomselection.h"
+#include "core.h"
 #include "editor.hpp"
 #include "evaluator.h"
 #include "moleculedata.h"

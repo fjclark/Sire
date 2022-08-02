@@ -30,6 +30,8 @@
 #include "stringproperty.h"
 #include "numberproperty.h"
 #include "arrayproperty.hpp"
+#include "variantproperty.h"
+#include "booleanproperty.h"
 
 #include "SireError/errors.h"
 
@@ -82,9 +84,39 @@ namespace SireBase
         return StringProperty(value);
     }
 
+    PropertyPtr wrap(const char *value)
+    {
+        return wrap(QString(value));
+    }
+
     PropertyPtr wrap(double value)
     {
         return NumberProperty(value);
+    }
+
+    PropertyPtr wrap(qint32 value)
+    {
+        return NumberProperty(qint64(value));
+    }
+
+    PropertyPtr wrap(quint32 value)
+    {
+        return NumberProperty(qint64(value));
+    }
+
+    PropertyPtr wrap(qint64 value)
+    {
+        return NumberProperty(qint64(value));
+    }
+
+    PropertyPtr wrap(quint64 value)
+    {
+        return NumberProperty(qint64(value));
+    }
+
+    PropertyPtr wrap(bool value)
+    {
+        return BooleanProperty(value);
     }
 
     PropertyPtr wrap(const QList<int> &values)
@@ -136,6 +168,57 @@ namespace SireBase
     PropertyPtr wrap(const QStringList &values)
     {
         return StringArrayProperty(values);
+    }
+
+    PropertyPtr wrap(const QVariant &value)
+    {
+        qDebug() << "WRAP" << value.toString();
+        //qDebug() << value.canConvert<SireBase::Property>();
+        return PropertyPtr(VariantProperty(value));
+    }
+
+    PropertyPtr wrap(const QVector<QVariant> &values)
+    {
+        if (values.count() == 0)
+        {
+            return PropertyPtr();
+        }
+        else if (values.count() == 1)
+        {
+            return wrap(values.at(0));
+        }
+        else
+        {
+            PropertyList vals;
+            for (const auto &value : values)
+            {
+                vals.append(wrap(value));
+            }
+
+            return vals;
+        }
+    }
+
+    PropertyPtr wrap(const QList<QVariant> &values)
+    {
+        if (values.count() == 0)
+        {
+            return PropertyPtr();
+        }
+        else if (values.count() == 1)
+        {
+            return wrap(values.at(0));
+        }
+        else
+        {
+            PropertyList vals;
+            for (const auto &value : values)
+            {
+                vals.append(wrap(value));
+            }
+
+            return vals;
+        }
     }
 }
 

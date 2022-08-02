@@ -57,6 +57,8 @@
 
 #include "ProtoMSParameters.pypp.hpp"
 
+#include "SDF.pypp.hpp"
+
 #include "Supplementary.pypp.hpp"
 
 #include "Tinker.pypp.hpp"
@@ -76,6 +78,8 @@ namespace bp = boost::python;
 #include "SireIO_registrars.h"
 
 #include "SireIO_properties.h"
+
+#include "_IO_load.h"
 
 BOOST_PYTHON_MODULE(_IO){
     register_SireIO_objects();
@@ -134,6 +138,8 @@ BOOST_PYTHON_MODULE(_IO){
 
     register_ProtoMSParameters_class();
 
+    register_SDF_class();
+
     register_Supplementary_class();
 
     register_Tinker_class();
@@ -145,6 +151,8 @@ BOOST_PYTHON_MODULE(_IO){
     register_ZmatrixMaker_class();
 
     register_SireIO_properties();
+
+    register_SireIO_load_function();
 
     register_free_functions();
 }

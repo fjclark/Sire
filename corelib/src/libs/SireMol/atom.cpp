@@ -101,7 +101,7 @@ Atom::Atom() : ConcreteProperty<Atom,MoleculeView>(), atomidx( Index::null() )
 
 /** Construct the atom that that is identified by ID 'atomid'
     in the view 'molview' - this atom must be within this view
-    
+
     \throw SireMol::missing_atom
     \throw SireMol::duplicate_atom
     \throw SireError::invalid_index
@@ -115,13 +115,13 @@ Atom::Atom(const MoleculeView &molview, const AtomID &atomid)
 
 /** Construct the atom that is identified by ID 'atomid'
     in the molecule whose data is in 'moldata'
-    
+
     \throw SireMol::missing_atom
     \throw SireMol::duplicate_atom
     \throw SireError::invalid_index
 */
 Atom::Atom(const MoleculeData &moldata, const AtomID &atomid)
-     : ConcreteProperty<Atom,MoleculeView>(moldata), 
+     : ConcreteProperty<Atom,MoleculeView>(moldata),
        atomidx( moldata.info().atomIdx(atomid) )
 {}
 
@@ -139,7 +139,7 @@ Atom& Atom::operator=(const Atom &other)
 {
     MoleculeView::operator=(other);
     atomidx = other.atomidx;
-    
+
     return *this;
 }
 
@@ -158,8 +158,31 @@ bool Atom::operator!=(const Atom &other) const
 /** Return a string representation of this atom */
 QString Atom::toString() const
 {
-    return QObject::tr( "Atom( %1 : %2 )" ).arg(this->name())
+    if (this->hasProperty("coordinates"))
+    {
+        try
+        {
+            QString name = QString("%1:%2").arg(this->name())
                                            .arg(this->number());
+
+            Vector c = this->property<Vector>("coordinates");
+            return QObject::tr("Atom( %1 [%2, %3, %4] )")
+                        .arg(name, -7)
+                        .arg(c.x(), 7, 'f', 2)
+                        .arg(c.y(), 7, 'f', 2)
+                        .arg(c.z(), 7, 'f', 2);
+        }
+        catch(SireError::exception&)
+        {}
+    }
+
+    return QObject::tr( "Atom( %1:%2 )" ).arg(this->name())
+                                          .arg(this->number());
+}
+
+MolViewPtr Atom::toSelector() const
+{
+    return MolViewPtr( Selector<Atom>(*this) );
 }
 
 /** Is this atom empty? */
@@ -179,7 +202,7 @@ AtomSelection Atom::selection() const
 {
     AtomSelection selected_atoms(data());
     selected_atoms.selectOnly(atomidx);
-    
+
     return selected_atoms;
 }
 
@@ -250,7 +273,7 @@ bool Atom::isWithinSegment() const
     return d->info().isWithinSegment(atomidx);
 }
 
-/** Return the residue that this atom is in 
+/** Return the residue that this atom is in
 
     \throw SireMol::missing_residue
 */
@@ -259,7 +282,7 @@ Residue Atom::residue() const
     return Residue(*d, d->info().parentResidue(atomidx));
 }
 
-/** Return the chain this atom is in 
+/** Return the chain this atom is in
 
     \throw SireMol::missing_chain
 */
@@ -268,7 +291,7 @@ Chain Atom::chain() const
     return Chain(*d, d->info().parentChain(atomidx));
 }
 
-/** Return the segment this atom is in 
+/** Return the segment this atom is in
 
     \throw SireMol::missing_segment
 */
@@ -310,8 +333,22 @@ void Atom::update(const MoleculeData &moldata)
                 .arg(moldata.number()).arg(moldata.info().UID().toString()),
                     CODELOC );
     }
-    
+
     d = moldata;
+}
+
+/** Return the specified property as a QVariant */
+QVariant Atom::propertyAsVariant(const PropertyName &key) const
+{
+    const Property &property = d->property(key);
+    return property.asA<AtomProp>().getAsVariant(this->cgAtomIdx());
+}
+
+/** Return the specified property as a PropertyPtr */
+PropertyPtr Atom::propertyAsProperty(const PropertyName &key) const
+{
+    const Property &property = d->property(key);
+    return property.asA<AtomProp>().getAsProperty(this->cgAtomIdx());
 }
 
 /** Return whether or not there is an AtomProperty at key 'key' */
@@ -328,7 +365,7 @@ bool Atom::hasMetadata(const PropertyName &metakey) const
 
 /** Return whether the metadata at metakey 'metakey' for the property
     at key 'key' is an AtomProperty
-    
+
     \throw SireBase::missing_property
 */
 bool Atom::hasMetadata(const PropertyName &key,
@@ -349,9 +386,9 @@ QStringList Atom::metadataKeys() const
     return d->properties().metadataKeysOfType<AtomProp>();
 }
 
-/** Return the metakeys of all AtomProperty metadata for 
+/** Return the metakeys of all AtomProperty metadata for
     the property at key 'key'
-    
+
     \throw SireBase::missing_property
 */
 QStringList Atom::metadataKeys(const PropertyName &key) const
@@ -385,7 +422,7 @@ void Atom::assertContainsProperty(const PropertyName &key) const
 
 /** Assert that this atom has an AtomProperty piece of metadata
     at metakey 'metakey'
-    
+
     \throw SireBase::missing_property
 */
 void Atom::assertContainsMetadata(const PropertyName &metakey) const
@@ -399,7 +436,7 @@ void Atom::assertContainsMetadata(const PropertyName &metakey) const
 
 /** Assert that the property at key 'key' has an AtomProperty
     piece of metadata at metakey 'metakey'
-    
+
     \throw SireBase::missing_property
 */
 void Atom::assertContainsMetadata(const PropertyName &key,

@@ -59,6 +59,8 @@ namespace bp = boost::python;
 
 #include "SireMaths/align.h"
 
+#include "SireMaths/vectorproperty.h"
+
 #include "SireStream/datastream.h"
 
 #include "SireStream/shareddatastream.h"
@@ -77,9 +79,15 @@ namespace bp = boost::python;
 
 #include "atompolarisabilities.h"
 
+#include "atompropertylist.h"
+
+#include "atomradicals.h"
+
 #include "atomradii.h"
 
 #include "atomvelocities.h"
+
+#include "SireBase/propertylist.h"
 
 #include "SireError/errors.h"
 
@@ -177,6 +185,56 @@ SireMol::AtomEditorBase& set_Metadata_SireMol_AtomPolarisabilities_function2(
                                    const QString &key, const QString &metakey, const SireUnits::Dimension::Volume &p)
                                    { return molview.setMetadata< SireUnits::Dimension::Volume >(key, metakey, p); }
 
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomPropertyList_function1(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &metakey, const SireBase::PropertyList &p)
+                                   { return molview.setMetadata< SireBase::PropertyList >(metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomPropertyList_function2(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &key, const QString &metakey, const SireBase::PropertyList &p)
+                                   { return molview.setMetadata< SireBase::PropertyList >(key, metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomDoubleArrayProperty_function1(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &metakey, const SireBase::DoubleArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::DoubleArrayProperty >(metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomDoubleArrayProperty_function2(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &key, const QString &metakey, const SireBase::DoubleArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::DoubleArrayProperty >(key, metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomIntegerArrayProperty_function1(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &metakey, const SireBase::IntegerArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::IntegerArrayProperty >(metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomIntegerArrayProperty_function2(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &key, const QString &metakey, const SireBase::IntegerArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::IntegerArrayProperty >(key, metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomStringArrayProperty_function1(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &metakey, const SireBase::StringArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::StringArrayProperty >(metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomStringArrayProperty_function2(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &key, const QString &metakey, const SireBase::StringArrayProperty &p)
+                                   { return molview.setMetadata< SireBase::StringArrayProperty >(key, metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomRadicals_function1(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &metakey, const SireMol::Radical &p)
+                                   { return molview.setMetadata< SireMol::Radical >(metakey, p); }
+
+SireMol::AtomEditorBase& set_Metadata_SireMol_AtomRadicals_function2(
+                                  SireMol::AtomEditorBase &molview,
+                                   const QString &key, const QString &metakey, const SireMol::Radical &p)
+                                   { return molview.setMetadata< SireMol::Radical >(key, metakey, p); }
+
 SireMol::AtomEditorBase& set_Metadata_SireMol_AtomRadii_function1(
                                   SireMol::AtomEditorBase &molview,
                                    const QString &metakey, const SireUnits::Dimension::Length &p)
@@ -239,6 +297,8 @@ SireMol::AtomEditorBase& set_Metadata_SireMol_AtomVariantProperty_function2(
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 #include "Helpers/len.hpp"
 
 void register_AtomEditorBase_class(){
@@ -256,6 +316,33 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "atom"
                 , atom_function_value
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::atom
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::AtomEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*atom_function_type)( int,::SireBase::PropertyMap const & ) ;
+            atom_function_type atom_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::atom );
+            
+            AtomEditorBase_exposer.def( 
+                "atom"
+                , atom_function_value
+                , ( bp::arg("i"), bp::arg("map")=SireBase::PropertyMap() )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::atom
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::AtomEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*atom_function_type)( ::QString const &,::SireBase::PropertyMap const & ) ;
+            atom_function_type atom_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::atom );
+            
+            AtomEditorBase_exposer.def( 
+                "atom"
+                , atom_function_value
+                , ( bp::arg("name"), bp::arg("map")=SireBase::PropertyMap() )
                 , "" );
         
         }
@@ -281,6 +368,33 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "chain"
                 , chain_function_value
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::chain
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::ChainEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*chain_function_type)( int,::SireBase::PropertyMap const & ) ;
+            chain_function_type chain_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::chain );
+            
+            AtomEditorBase_exposer.def( 
+                "chain"
+                , chain_function_value
+                , ( bp::arg("i"), bp::arg("map")=SireBase::PropertyMap() )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::chain
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::ChainEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*chain_function_type)( ::QString const &,::SireBase::PropertyMap const & ) ;
+            chain_function_type chain_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::chain );
+            
+            AtomEditorBase_exposer.def( 
+                "chain"
+                , chain_function_value
+                , ( bp::arg("name"), bp::arg("map")=SireBase::PropertyMap() )
                 , "" );
         
         }
@@ -306,6 +420,33 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "cutGroup"
                 , cutGroup_function_value
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::cutGroup
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::CGEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*cutGroup_function_type)( int,::SireBase::PropertyMap const & ) ;
+            cutGroup_function_type cutGroup_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::cutGroup );
+            
+            AtomEditorBase_exposer.def( 
+                "cutGroup"
+                , cutGroup_function_value
+                , ( bp::arg("i"), bp::arg("map")=SireBase::PropertyMap() )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::cutGroup
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::CGEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*cutGroup_function_type)( ::QString const &,::SireBase::PropertyMap const & ) ;
+            cutGroup_function_type cutGroup_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::cutGroup );
+            
+            AtomEditorBase_exposer.def( 
+                "cutGroup"
+                , cutGroup_function_value
+                , ( bp::arg("name"), bp::arg("map")=SireBase::PropertyMap() )
                 , "" );
         
         }
@@ -331,6 +472,7 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "molecule"
                 , molecule_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -359,6 +501,110 @@ void register_AtomEditorBase_class(){
                 , assign_function_value
                 , ( bp::arg("other") )
                 , bp::return_self< >()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( int ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("i") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::QString const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("name") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireMol::AtomID const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("atomid") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireMol::ResID const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("resid") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireMol::CGID const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("cgid") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireMol::ChainID const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("chainid") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireMol::SegID const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("segid") )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[]
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::MolViewPtr ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*__getitem___function_type)( ::SireID::Index const & ) ;
+            __getitem___function_type __getitem___function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::operator[] );
+            
+            AtomEditorBase_exposer.def( 
+                "__getitem__"
+                , __getitem___function_value
+                , ( bp::arg("idx") )
                 , "" );
         
         }
@@ -413,6 +659,33 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "residue"
                 , residue_function_value
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::residue
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::ResEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*residue_function_type)( int,::SireBase::PropertyMap const & ) ;
+            residue_function_type residue_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::residue );
+            
+            AtomEditorBase_exposer.def( 
+                "residue"
+                , residue_function_value
+                , ( bp::arg("i"), bp::arg("map")=SireBase::PropertyMap() )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::residue
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::ResEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*residue_function_type)( ::QString const &,::SireBase::PropertyMap const & ) ;
+            residue_function_type residue_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::residue );
+            
+            AtomEditorBase_exposer.def( 
+                "residue"
+                , residue_function_value
+                , ( bp::arg("name"), bp::arg("map")=SireBase::PropertyMap() )
                 , "" );
         
         }
@@ -438,6 +711,33 @@ void register_AtomEditorBase_class(){
             AtomEditorBase_exposer.def( 
                 "segment"
                 , segment_function_value
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::segment
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::SegEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*segment_function_type)( int,::SireBase::PropertyMap const & ) ;
+            segment_function_type segment_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::segment );
+            
+            AtomEditorBase_exposer.def( 
+                "segment"
+                , segment_function_value
+                , ( bp::arg("i"), bp::arg("map")=SireBase::PropertyMap() )
+                , "" );
+        
+        }
+        { //::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::segment
+        
+            typedef SireMol::Editor< SireMol::AtomEditor, SireMol::Atom > exported_class_t;
+            typedef ::SireMol::SegEditor ( ::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::*segment_function_type)( ::QString const &,::SireBase::PropertyMap const & ) ;
+            segment_function_type segment_function_value( &::SireMol::Editor< SireMol::AtomEditor, SireMol::Atom >::segment );
+            
+            AtomEditorBase_exposer.def( 
+                "segment"
+                , segment_function_value
+                , ( bp::arg("name"), bp::arg("map")=SireBase::PropertyMap() )
                 , "" );
         
         }
@@ -555,6 +855,26 @@ void register_AtomEditorBase_class(){
                                            &SireMol::AtomEditorBase::setProperty< SireUnits::Dimension::Volume >, bp::return_self< >() );
         AtomEditorBase_exposer.def( "_set_metadata_SireUnits_Dimension_Volume", &set_Metadata_SireMol_AtomPolarisabilities_function1, bp::return_self< >());
         AtomEditorBase_exposer.def( "_set_metadata_SireUnits_Dimension_Volume", &set_Metadata_SireMol_AtomPolarisabilities_function2, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_property_SireBase_PropertyList",
+                                           &SireMol::AtomEditorBase::setProperty< SireBase::PropertyList >, bp::return_self< >() );
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_PropertyList", &set_Metadata_SireMol_AtomPropertyList_function1, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_PropertyList", &set_Metadata_SireMol_AtomPropertyList_function2, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_property_SireBase_DoubleArrayProperty",
+                                           &SireMol::AtomEditorBase::setProperty< SireBase::DoubleArrayProperty >, bp::return_self< >() );
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_DoubleArrayProperty", &set_Metadata_SireMol_AtomDoubleArrayProperty_function1, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_DoubleArrayProperty", &set_Metadata_SireMol_AtomDoubleArrayProperty_function2, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_property_SireBase_IntegerArrayProperty",
+                                           &SireMol::AtomEditorBase::setProperty< SireBase::IntegerArrayProperty >, bp::return_self< >() );
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_IntegerArrayProperty", &set_Metadata_SireMol_AtomIntegerArrayProperty_function1, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_IntegerArrayProperty", &set_Metadata_SireMol_AtomIntegerArrayProperty_function2, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_property_SireBase_StringArrayProperty",
+                                           &SireMol::AtomEditorBase::setProperty< SireBase::StringArrayProperty >, bp::return_self< >() );
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_StringArrayProperty", &set_Metadata_SireMol_AtomStringArrayProperty_function1, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_metadata_SireBase_StringArrayProperty", &set_Metadata_SireMol_AtomStringArrayProperty_function2, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_property_SireMol_Radical",
+                                           &SireMol::AtomEditorBase::setProperty< SireMol::Radical >, bp::return_self< >() );
+        AtomEditorBase_exposer.def( "_set_metadata_SireMol_Radical", &set_Metadata_SireMol_AtomRadicals_function1, bp::return_self< >());
+        AtomEditorBase_exposer.def( "_set_metadata_SireMol_Radical", &set_Metadata_SireMol_AtomRadicals_function2, bp::return_self< >());
         AtomEditorBase_exposer.def( "_set_property_SireUnits_Dimension_Length",
                                            &SireMol::AtomEditorBase::setProperty< SireUnits::Dimension::Length >, bp::return_self< >() );
         AtomEditorBase_exposer.def( "_set_metadata_SireUnits_Dimension_Length", &set_Metadata_SireMol_AtomRadii_function1, bp::return_self< >());

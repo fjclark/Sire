@@ -7,6 +7,8 @@
 
 namespace bp = boost::python;
 
+#include "SireBase/propertylist.h"
+
 #include "SireError/errors.h"
 
 #include "SireMaths/vector.h"
@@ -42,6 +44,8 @@ SireMol::AtomProperty<QVariant> __copy__(const SireMol::AtomProperty<QVariant> &
 #include "Qt/qdatastream.hpp"
 
 #include "Helpers/str.hpp"
+
+#include "Helpers/release_gil_policy.hpp"
 
 #include "Helpers/len.hpp"
 
@@ -83,6 +87,7 @@ void register_AtomVariantProperty_class(){
                 "assertCanConvert"
                 , assertCanConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -96,6 +101,7 @@ void register_AtomVariantProperty_class(){
                 "assignFrom"
                 , assignFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -137,6 +143,7 @@ void register_AtomVariantProperty_class(){
                 "canConvert"
                 , canConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -150,6 +157,7 @@ void register_AtomVariantProperty_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -163,6 +171,7 @@ void register_AtomVariantProperty_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values"), bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -175,6 +184,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "count"
                 , count_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -188,6 +198,7 @@ void register_AtomVariantProperty_class(){
                 "divide"
                 , divide_function_value
                 , ( bp::arg("beads") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -201,6 +212,7 @@ void register_AtomVariantProperty_class(){
                 "divideByResidue"
                 , divideByResidue_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -214,6 +226,7 @@ void register_AtomVariantProperty_class(){
                 "fromVariant"
                 , fromVariant_function_value
                 , ( bp::arg("variant") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -245,6 +258,34 @@ void register_AtomVariantProperty_class(){
                 , "" );
         
         }
+        { //::SireMol::AtomProperty< QVariant >::getAsProperty
+        
+            typedef SireMol::AtomProperty< QVariant > exported_class_t;
+            typedef ::SireBase::PropertyPtr ( ::SireMol::AtomProperty< QVariant >::*getAsProperty_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsProperty_function_type getAsProperty_function_value( &::SireMol::AtomProperty< QVariant >::getAsProperty );
+            
+            AtomVariantProperty_exposer.def( 
+                "getAsProperty"
+                , getAsProperty_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProperty< QVariant >::getAsVariant
+        
+            typedef SireMol::AtomProperty< QVariant > exported_class_t;
+            typedef ::QVariant ( ::SireMol::AtomProperty< QVariant >::*getAsVariant_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsVariant_function_type getAsVariant_function_value( &::SireMol::AtomProperty< QVariant >::getAsVariant );
+            
+            AtomVariantProperty_exposer.def( 
+                "getAsVariant"
+                , getAsVariant_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
         { //::SireMol::AtomProperty< QVariant >::isCompatibleWith
         
             typedef SireMol::AtomProperty< QVariant > exported_class_t;
@@ -255,6 +296,7 @@ void register_AtomVariantProperty_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -268,6 +310,7 @@ void register_AtomVariantProperty_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -280,6 +323,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "isEmpty"
                 , isEmpty_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -293,6 +337,7 @@ void register_AtomVariantProperty_class(){
                 "matchToSelection"
                 , matchToSelection_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -306,6 +351,7 @@ void register_AtomVariantProperty_class(){
                 "merge"
                 , merge_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -318,6 +364,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "nAtoms"
                 , nAtoms_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -331,6 +378,7 @@ void register_AtomVariantProperty_class(){
                 "nAtoms"
                 , nAtoms_function_value
                 , ( bp::arg("cgidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -343,6 +391,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "nCutGroups"
                 , nCutGroups_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -427,6 +476,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "size"
                 , size_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -439,6 +489,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "toString"
                 , toString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -451,6 +502,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "toVariant"
                 , toVariant_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -463,6 +515,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "toVector"
                 , toVector_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -476,6 +529,7 @@ void register_AtomVariantProperty_class(){
                 "toVector"
                 , toVector_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -488,6 +542,7 @@ void register_AtomVariantProperty_class(){
             AtomVariantProperty_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

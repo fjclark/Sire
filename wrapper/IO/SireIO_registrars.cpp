@@ -20,6 +20,7 @@
 #include "pdb2.h"
 #include "perturbationslibrary.h"
 #include "protoms.h"
+#include "sdf.h"
 #include "supplementary.h"
 #include "tinker.h"
 #include "trajectorymonitor.h"
@@ -57,6 +58,7 @@ void register_SireIO_objects()
     ObjectRegistry::registerConverterFor< SireIO::PerturbationsLibrary >();
     ObjectRegistry::registerConverterFor< SireIO::PerturbationsTemplate >();
     ObjectRegistry::registerConverterFor< SireIO::ProtoMS >();
+    ObjectRegistry::registerConverterFor< SireIO::SDF >();
     ObjectRegistry::registerConverterFor< SireIO::Supplementary >();
     ObjectRegistry::registerConverterFor< SireIO::Tinker >();
     ObjectRegistry::registerConverterFor< SireIO::TrajectoryMonitor >();

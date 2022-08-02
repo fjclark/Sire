@@ -36,7 +36,9 @@ set ( SIREMOL_HEADERS
       atomnum.h
       atompolarisabilities.h
       atomproperty.hpp
+      atompropertylist.h
       atomradii.h
+      atomradicals.h
       atomselection.h
       atomsin.hpp
       atomvelocities.h
@@ -50,6 +52,7 @@ set ( SIREMOL_HEADERS
       beads.h
       bondhunter.h
       bondid.h
+      bondtype.h
       calculateaxes.hpp
       cgatomidx.h
       cgeditor.h
@@ -68,6 +71,7 @@ set ( SIREMOL_HEADERS
       chainresid.h
       chargeperturbation.h
       connectivity.h
+      core.h
       cutgroup.h
       cuttingfunction.h
       dihedralid.h
@@ -77,6 +81,7 @@ set ( SIREMOL_HEADERS
       elementdb.h
       errors.h
       evaluator.h
+      evaluatorm.h
       improperid.h
       geometryperturbation.h
       groupatomids.h
@@ -111,14 +116,10 @@ set ( SIREMOL_HEADERS
       mover.h
       mover.hpp
       mover_metaid.h
-
       parser.h
-      parser/ast.h
-      parser/idengine.h
-      parser/grammar.h
-
       partialmolecule.h
       perturbation.h
+      radical.h
       reseditor.h
       resid.h
       residentifier.h
@@ -138,7 +139,10 @@ set ( SIREMOL_HEADERS
       segproperty.hpp
       select.h
       selector.hpp
+      selectorm.hpp
+      selectormol.h
       specifymol.h
+      stereoscopy.h
       structureeditor.h
       viewsofmol.h
       volumemap.h
@@ -173,6 +177,7 @@ set ( SIREMOL_SOURCES
       beads.cpp
       bondhunter.cpp
       bondid.cpp
+      bondtype.cpp
       cgatomidx.cpp
       cgeditor.cpp
       cgid.cpp
@@ -192,6 +197,7 @@ set ( SIREMOL_SOURCES
       elementdb.cpp
       errors.cpp
       evaluator.cpp
+      evaluatorm.cpp
       improperid.cpp
       findmcs.cpp
       geometryperturbation.cpp
@@ -218,13 +224,10 @@ set ( SIREMOL_SOURCES
       molwithresid.cpp
       molviewproperty.cpp
       mover.cpp
-
       parser.cpp
-      parser/ast.cpp
-      parser/idengine.cpp
-
       partialmolecule.cpp
       perturbation.cpp
+      radical.cpp
       reseditor.cpp
       resid.cpp
       residentifier.cpp
@@ -237,14 +240,16 @@ set ( SIREMOL_SOURCES
       segment.cpp
       segproperty.cpp
       select.cpp
+      selectormol.cpp
       specifymol.cpp
+      stereoscopy.cpp
       structureeditor.cpp
       viewsofmol.cpp
       volumemap.cpp
       weightfunction.cpp
       withatoms.cpp
       within.cpp
-      withres.cpp    
+      withres.cpp
 
       ${SIREMOL_HEADERS}
     )

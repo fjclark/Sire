@@ -7,6 +7,8 @@
 
 namespace bp = boost::python;
 
+#include "SireBase/propertylist.h"
+
 #include "SireError/errors.h"
 
 #include "SireMaths/vector.h"
@@ -37,6 +39,8 @@ namespace bp = boost::python;
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 void register_AtomProp_class(){
 
     { //::SireMol::AtomProp
@@ -52,6 +56,7 @@ void register_AtomProp_class(){
                 "assertCanConvert"
                 , assertCanConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -64,6 +69,7 @@ void register_AtomProp_class(){
                 "assignFrom"
                 , assignFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -76,6 +82,7 @@ void register_AtomProp_class(){
                 "canConvert"
                 , canConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -88,6 +95,7 @@ void register_AtomProp_class(){
                 "divide"
                 , divide_function_value
                 , ( bp::arg("beads") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -100,6 +108,33 @@ void register_AtomProp_class(){
                 "divideByResidue"
                 , divideByResidue_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProp::getAsProperty
+        
+            typedef ::SireBase::PropertyPtr ( ::SireMol::AtomProp::*getAsProperty_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsProperty_function_type getAsProperty_function_value( &::SireMol::AtomProp::getAsProperty );
+            
+            AtomProp_exposer.def( 
+                "getAsProperty"
+                , getAsProperty_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProp::getAsVariant
+        
+            typedef ::QVariant ( ::SireMol::AtomProp::*getAsVariant_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsVariant_function_type getAsVariant_function_value( &::SireMol::AtomProp::getAsVariant );
+            
+            AtomProp_exposer.def( 
+                "getAsVariant"
+                , getAsVariant_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -112,6 +147,7 @@ void register_AtomProp_class(){
                 "merge"
                 , merge_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -136,6 +172,7 @@ void register_AtomProp_class(){
             AtomProp_exposer.def( 
                 "toVariant"
                 , toVariant_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

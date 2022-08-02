@@ -45,6 +45,7 @@
 #include "SireMol/errors.h"
 #include "SireMol/molecule.h"
 #include "SireMol/moleditor.h"
+#include "SireMol/core.h"
 
 #include "SireUnits/units.h"
 
@@ -850,7 +851,9 @@ PDB2::PDB2(const SireSystem::System &system, const PropertyMap &map) :
     // Copy the velocities vector to the new object.
     parsed.velocities = velocities;
 
+    QStringList copy_warnings = parse_warnings;
     this->operator=(parsed);
+    parse_warnings = copy_warnings;
 }
 
 /** Copy constructor */
@@ -1139,7 +1142,7 @@ QString PDB2::formatDescription() const
 /** Return the suffixes that these files are normally associated with */
 QStringList PDB2::formatSuffix() const
 {
-    static const QStringList suffixes = { "PDB" };
+    static const QStringList suffixes = { "pdb" };
     return suffixes;
 }
 

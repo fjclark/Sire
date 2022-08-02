@@ -8,6 +8,7 @@
 #include "amberparams.h"
 #include "anglerestraint.h"
 #include "atomljs.h"
+#include "bond.h"
 #include "clj14group.h"
 #include "cljatoms.h"
 #include "cljboxes.h"
@@ -54,6 +55,8 @@
 #include "restraint.h"
 #include "restraintcomponent.h"
 #include "restraintff.h"
+#include "selectorbond.h"
+#include "selectormbond.h"
 #include "softcljcomponent.h"
 #include "switchingfunction.h"
 #include "threeatomfunctions.h"
@@ -73,6 +76,8 @@ void register_SireMM_objects()
     ObjectRegistry::registerConverterFor< SireMM::AmberNBDihPart >();
     ObjectRegistry::registerConverterFor< SireMM::AngleRestraint >();
     ObjectRegistry::registerConverterFor< SireMM::AtomLJs >();
+    ObjectRegistry::registerConverterFor< SireMM::Bond >();
+    ObjectRegistry::registerConverterFor< SireMol::Mover<SireMM::Bond> >();
     ObjectRegistry::registerConverterFor< SireMM::CLJ14Group >();
     ObjectRegistry::registerConverterFor< SireMM::CLJAtom >();
     ObjectRegistry::registerConverterFor< SireMM::CLJAtoms >();
@@ -184,6 +189,9 @@ void register_SireMM_objects()
     ObjectRegistry::registerConverterFor< SireMM::NullRestraint >();
     ObjectRegistry::registerConverterFor< SireMM::RestraintComponent >();
     ObjectRegistry::registerConverterFor< SireMM::RestraintFF >();
+    ObjectRegistry::registerConverterFor< SireMM::SelectorBond >();
+    ObjectRegistry::registerConverterFor< SireMol::Mover<SireMM::SelectorBond> >();
+    ObjectRegistry::registerConverterFor< SireMM::SelectorMBond >();
     ObjectRegistry::registerConverterFor< SireMM::SoftCLJComponent >();
     ObjectRegistry::registerConverterFor< SireMM::NoCutoff >();
     ObjectRegistry::registerConverterFor< SireMM::HarmonicSwitchingFunction >();

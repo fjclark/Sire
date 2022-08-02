@@ -11,6 +11,8 @@ namespace bp = boost::python;
 
 #include "SireMaths/align.h"
 
+#include "SireMaths/vectorproperty.h"
+
 #include "SireStream/datastream.h"
 
 #include "SireStream/shareddatastream.h"
@@ -38,6 +40,8 @@ SireMol::AtomProperty<SireMaths::Vector> __copy__(const SireMol::AtomProperty<Si
 #include "Qt/qdatastream.hpp"
 
 #include "Helpers/str.hpp"
+
+#include "Helpers/release_gil_policy.hpp"
 
 #include "Helpers/len.hpp"
 
@@ -74,6 +78,7 @@ void register_AtomCoords_class(){
                 "assertCanConvert"
                 , assertCanConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -87,6 +92,7 @@ void register_AtomCoords_class(){
                 "assignFrom"
                 , assignFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -128,6 +134,7 @@ void register_AtomCoords_class(){
                 "canConvert"
                 , canConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -141,6 +148,7 @@ void register_AtomCoords_class(){
                 "changeFrame"
                 , changeFrame_function_value
                 , ( bp::arg("from_frame"), bp::arg("to_frame") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -154,6 +162,7 @@ void register_AtomCoords_class(){
                 "changeFrame"
                 , changeFrame_function_value
                 , ( bp::arg("cgidx"), bp::arg("from_frame"), bp::arg("to_frame") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -167,6 +176,7 @@ void register_AtomCoords_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -180,6 +190,7 @@ void register_AtomCoords_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values"), bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -192,6 +203,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "count"
                 , count_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -205,6 +217,7 @@ void register_AtomCoords_class(){
                 "divide"
                 , divide_function_value
                 , ( bp::arg("beads") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -218,6 +231,7 @@ void register_AtomCoords_class(){
                 "divideByResidue"
                 , divideByResidue_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -231,6 +245,7 @@ void register_AtomCoords_class(){
                 "fromVariant"
                 , fromVariant_function_value
                 , ( bp::arg("variant") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -262,6 +277,34 @@ void register_AtomCoords_class(){
                 , "" );
         
         }
+        { //::SireMol::AtomProperty< SireMaths::Vector >::getAsProperty
+        
+            typedef SireMol::AtomProperty< SireMaths::Vector > exported_class_t;
+            typedef ::SireBase::PropertyPtr ( ::SireMol::AtomProperty< SireMaths::Vector >::*getAsProperty_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsProperty_function_type getAsProperty_function_value( &::SireMol::AtomProperty< SireMaths::Vector >::getAsProperty );
+            
+            AtomCoords_exposer.def( 
+                "getAsProperty"
+                , getAsProperty_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProperty< SireMaths::Vector >::getAsVariant
+        
+            typedef SireMol::AtomProperty< SireMaths::Vector > exported_class_t;
+            typedef ::QVariant ( ::SireMol::AtomProperty< SireMaths::Vector >::*getAsVariant_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsVariant_function_type getAsVariant_function_value( &::SireMol::AtomProperty< SireMaths::Vector >::getAsVariant );
+            
+            AtomCoords_exposer.def( 
+                "getAsVariant"
+                , getAsVariant_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
         { //::SireMol::AtomProperty< SireMaths::Vector >::isCompatibleWith
         
             typedef SireMol::AtomProperty< SireMaths::Vector > exported_class_t;
@@ -272,6 +315,7 @@ void register_AtomCoords_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -285,6 +329,7 @@ void register_AtomCoords_class(){
                 "mapInto"
                 , mapInto_function_value
                 , ( bp::arg("axes") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -298,6 +343,7 @@ void register_AtomCoords_class(){
                 "mapInto"
                 , mapInto_function_value
                 , ( bp::arg("cgidx"), bp::arg("axes") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -311,6 +357,7 @@ void register_AtomCoords_class(){
                 "merge"
                 , merge_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -323,6 +370,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "nAtoms"
                 , nAtoms_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -336,6 +384,7 @@ void register_AtomCoords_class(){
                 "nAtoms"
                 , nAtoms_function_value
                 , ( bp::arg("cgidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -348,6 +397,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "nCutGroups"
                 , nCutGroups_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -405,6 +455,7 @@ void register_AtomCoords_class(){
                 "rotate"
                 , rotate_function_value
                 , ( bp::arg("quat"), bp::arg("point") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -418,6 +469,7 @@ void register_AtomCoords_class(){
                 "rotate"
                 , rotate_function_value
                 , ( bp::arg("rotmat"), bp::arg("point") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -431,6 +483,7 @@ void register_AtomCoords_class(){
                 "rotate"
                 , rotate_function_value
                 , ( bp::arg("cgidx"), bp::arg("quat"), bp::arg("point") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -444,6 +497,7 @@ void register_AtomCoords_class(){
                 "rotate"
                 , rotate_function_value
                 , ( bp::arg("cgidx"), bp::arg("rotmat"), bp::arg("point") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -498,6 +552,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "size"
                 , size_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -510,6 +565,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "toVariant"
                 , toVariant_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -522,6 +578,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "toVector"
                 , toVector_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -535,6 +592,7 @@ void register_AtomCoords_class(){
                 "toVector"
                 , toVector_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -548,6 +606,7 @@ void register_AtomCoords_class(){
                 "transform"
                 , transform_function_value
                 , ( bp::arg("t") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -561,6 +620,7 @@ void register_AtomCoords_class(){
                 "transform"
                 , transform_function_value
                 , ( bp::arg("cgidx"), bp::arg("t") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -574,6 +634,7 @@ void register_AtomCoords_class(){
                 "translate"
                 , translate_function_value
                 , ( bp::arg("delta") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -587,6 +648,7 @@ void register_AtomCoords_class(){
                 "translate"
                 , translate_function_value
                 , ( bp::arg("cgidx"), bp::arg("delta") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -599,6 +661,7 @@ void register_AtomCoords_class(){
             AtomCoords_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

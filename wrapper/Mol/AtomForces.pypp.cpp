@@ -22,6 +22,8 @@ SireMol::AtomProperty<SireMaths::Vector3D<SireUnits::Dimension::Force> > __copy_
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 #include "Helpers/len.hpp"
 
 void register_AtomForces_class(){
@@ -62,6 +64,7 @@ void register_AtomForces_class(){
                 "assertCanConvert"
                 , assertCanConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -75,6 +78,7 @@ void register_AtomForces_class(){
                 "assignFrom"
                 , assignFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -102,7 +106,7 @@ void register_AtomForces_class(){
                 "at"
                 , at_function_value
                 , ( bp::arg("cgatomidx") )
-                , bp::return_value_policy<bp::clone_const_reference>()
+                , bp::return_value_policy<bp::clone_const_reference, bp::release_gil_policy>()
                 , "" );
         
         }
@@ -116,6 +120,7 @@ void register_AtomForces_class(){
                 "canConvert"
                 , canConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -129,6 +134,7 @@ void register_AtomForces_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -142,6 +148,7 @@ void register_AtomForces_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values"), bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -154,6 +161,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "count"
                 , count_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -167,6 +175,7 @@ void register_AtomForces_class(){
                 "divide"
                 , divide_function_value
                 , ( bp::arg("beads") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -180,6 +189,7 @@ void register_AtomForces_class(){
                 "divideByResidue"
                 , divideByResidue_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -193,6 +203,7 @@ void register_AtomForces_class(){
                 "fromVariant"
                 , fromVariant_function_value
                 , ( bp::arg("variant") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -220,7 +231,35 @@ void register_AtomForces_class(){
                 "get"
                 , get_function_value
                 , ( bp::arg("cgatomidx") )
-                , bp::return_value_policy<bp::clone_const_reference>()
+                , bp::return_value_policy<bp::clone_const_reference, bp::release_gil_policy>()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::getAsProperty
+        
+            typedef SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > > exported_class_t;
+            typedef ::SireBase::PropertyPtr ( ::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::*getAsProperty_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsProperty_function_type getAsProperty_function_value( &::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::getAsProperty );
+            
+            AtomForces_exposer.def( 
+                "getAsProperty"
+                , getAsProperty_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::getAsVariant
+        
+            typedef SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > > exported_class_t;
+            typedef ::QVariant ( ::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::*getAsVariant_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsVariant_function_type getAsVariant_function_value( &::SireMol::AtomProperty< SireMaths::Vector3D< SireUnits::Dimension::Force > >::getAsVariant );
+            
+            AtomForces_exposer.def( 
+                "getAsVariant"
+                , getAsVariant_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -234,6 +273,7 @@ void register_AtomForces_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -247,6 +287,7 @@ void register_AtomForces_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -259,6 +300,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "isEmpty"
                 , isEmpty_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -272,6 +314,7 @@ void register_AtomForces_class(){
                 "matchToSelection"
                 , matchToSelection_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -285,6 +328,7 @@ void register_AtomForces_class(){
                 "merge"
                 , merge_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -297,6 +341,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "nAtoms"
                 , nAtoms_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -310,6 +355,7 @@ void register_AtomForces_class(){
                 "nAtoms"
                 , nAtoms_function_value
                 , ( bp::arg("cgidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -322,6 +368,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "nCutGroups"
                 , nCutGroups_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -365,7 +412,7 @@ void register_AtomForces_class(){
                 "__getitem__"
                 , __getitem___function_value
                 , ( bp::arg("cgatomidx") )
-                , bp::return_value_policy<bp::clone_const_reference>()
+                , bp::return_value_policy<bp::clone_const_reference, bp::release_gil_policy>()
                 , "" );
         
         }
@@ -406,6 +453,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "size"
                 , size_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -418,6 +466,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "toString"
                 , toString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -430,6 +479,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "toVariant"
                 , toVariant_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -442,6 +492,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "toVector"
                 , toVector_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -455,6 +506,7 @@ void register_AtomForces_class(){
                 "toVector"
                 , toVector_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -467,6 +519,7 @@ void register_AtomForces_class(){
             AtomForces_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

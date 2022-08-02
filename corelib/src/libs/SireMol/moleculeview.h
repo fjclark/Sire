@@ -35,6 +35,8 @@
 #include "moleculedata.h"
 #include "moleculeinfodata.h"
 
+#include <limits>
+
 SIRE_BEGIN_HEADER
 
 namespace SireMol
@@ -44,6 +46,11 @@ class MoleculeView;
 
 SIREMOL_EXPORT QDataStream& operator<<(QDataStream&, const SireMol::MoleculeView&);
 SIREMOL_EXPORT QDataStream& operator>>(QDataStream&, SireMol::MoleculeView&);
+
+namespace SireBase
+{
+class Slice;
+}
 
 namespace SireMol
 {
@@ -69,7 +76,7 @@ typedef SireBase::PropPtr<MoleculeView> MolViewPtr;
 
 /** This is the base class of all views of a Molecule. Derived
     classes include Molecule, Segment, Chain, CutGroup, Residue and Atom.
-    
+
     (and the manipulator classes of each of these)
 
     @author Christopher Woods
@@ -87,7 +94,7 @@ public:
     {
         return "SireMol::MoleculeView";
     }
-    
+
     /** Return a clone of this view */
     virtual MoleculeView* clone() const=0;
 
@@ -110,7 +117,7 @@ public:
 
     /** Return whether or not this molecule view is empty */
     virtual bool isEmpty() const=0;
-    
+
     /** Return whether or not this molecule view holds a complete
         view of a molecule */
     virtual bool selectedAll() const=0;
@@ -124,13 +131,25 @@ public:
     int count() const;
     virtual int nViews() const;
 
+    virtual int nAtoms() const;
+    virtual int nResidues() const;
+    virtual int nChains() const;
+    virtual int nSegments() const;
+    virtual int nCutGroups() const;
+
     virtual MolViewPtr operator[](int i) const;
+    virtual MolViewPtr operator[](const QString &name) const;
     virtual MolViewPtr operator[](const AtomID &atomid) const;
     virtual MolViewPtr operator[](const ResID &resid) const;
     virtual MolViewPtr operator[](const CGID &cgid) const;
     virtual MolViewPtr operator[](const ChainID &chainid) const;
     virtual MolViewPtr operator[](const SegID &segid) const;
     virtual MolViewPtr operator[](const SireID::Index &idx) const;
+    virtual MolViewPtr operator[](const SireBase::Slice &slice) const;
+    virtual MolViewPtr operator[](const QList<qint64> &idxs) const;
+
+    virtual QList<MolViewPtr> toList() const;
+    virtual MolViewPtr toSelector() const=0;
 
     MolViewPtr at(int i) const;
     MolViewPtr at(const AtomID &atomid) const;
@@ -140,50 +159,114 @@ public:
     MolViewPtr at(const SegID &segid) const;
     MolViewPtr at(const SireID::Index &idx) const;
 
+    Atom atom(int i, const PropertyMap &map = PropertyMap()) const;
+    Atom atom(const QString &name, const PropertyMap &map = PropertyMap()) const;
     Atom atom(const AtomID &atomid, const PropertyMap &map = PropertyMap()) const;
-    
+
+    Selector<Atom> atoms(const QString &name,
+                         const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Atom> atoms(const SireBase::Slice &slice,
+                         const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Atom> atoms(const QList<qint64> &values,
+                         const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Atom> atoms(const QStringList &names,
+                         const PropertyMap &map = PropertyMap()) const;
+
     Selector<Atom> atoms(const AtomID &atomid,
                          const PropertyMap &map = PropertyMap()) const;
 
     Atom atom() const;
     Selector<Atom> atoms() const;
 
+    CutGroup cutGroup(int i, const PropertyMap &map = PropertyMap()) const;
+    CutGroup cutGroup(const QString &name, const PropertyMap &map = PropertyMap()) const;
     CutGroup cutGroup(const CGID &cgid, const PropertyMap &map = PropertyMap()) const;
-    
+
+    Selector<CutGroup> cutGroups(const QString &name,
+                                 const PropertyMap &map = PropertyMap()) const;
+
+    Selector<CutGroup> cutGroups(const SireBase::Slice &slice,
+                                 const PropertyMap &map = PropertyMap()) const;
+
     Selector<CutGroup> cutGroups(const CGID &cgid,
                                  const PropertyMap &map = PropertyMap()) const;
 
     CutGroup cutGroup() const;
     Selector<CutGroup> cutGroups() const;
-    
+
+    Residue residue(int i, const PropertyMap &map = PropertyMap()) const;
+    Residue residue(const QString &name, const PropertyMap &map = PropertyMap()) const;
     Residue residue(const ResID &resid, const PropertyMap &map = PropertyMap()) const;
-    
+
+    Selector<Residue> residues(const QString &name,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Residue> residues(const QList<qint64> &values,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Residue> residues(const QStringList &names,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Residue> residues(const SireBase::Slice &slice,
+                               const PropertyMap &map = PropertyMap()) const;
+
     Selector<Residue> residues(const ResID &resid,
                                const PropertyMap &map = PropertyMap()) const;
 
     Residue residue() const;
     Selector<Residue> residues() const;
-    
+
+    Selector<Chain> chains(const QString &name,
+                           const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Chain> chains(const QList<qint64> &values,
+                           const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Chain> chains(const QStringList &names,
+                           const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Chain> chains(const SireBase::Slice &slice,
+                           const PropertyMap &map = PropertyMap()) const;
+
+    Chain chain(int i, const PropertyMap &map = PropertyMap()) const;
+    Chain chain(const QString &name, const PropertyMap &map = PropertyMap()) const;
     Chain chain(const ChainID &chainid, const PropertyMap &map = PropertyMap()) const;
-    
+
     Selector<Chain> chains(const ChainID &chainid,
                            const PropertyMap &map = PropertyMap()) const;
-    
+
     Chain chain() const;
     Selector<Chain> chains() const;
-    
+
+    Selector<Segment> segments(const QString &name,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Segment> segments(const QList<qint64> &values,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Segment> segments(const QStringList &names,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Selector<Segment> segments(const SireBase::Slice &slice,
+                               const PropertyMap &map = PropertyMap()) const;
+
+    Segment segment(int i, const PropertyMap &map = PropertyMap()) const;
+    Segment segment(const QString &name, const PropertyMap &map = PropertyMap()) const;
     Segment segment(const SegID &segid, const PropertyMap &map = PropertyMap()) const;
-    
+
     Selector<Segment> segments(const SegID &segid,
                                const PropertyMap &map = PropertyMap()) const;
-    
+
     Segment segment() const;
     Selector<Segment> segments() const;
-    
+
     Molecule molecule() const;
-    
+
     SelectResult search(const QString &search_string) const;
-    
+
     CutGroup select(const CGID &cgid, const PropertyMap &map = PropertyMap()) const;
     Residue select(const ResID &resid, const PropertyMap &map = PropertyMap()) const;
     Chain select(const ChainID &chainid, const PropertyMap &map = PropertyMap()) const;
@@ -195,13 +278,13 @@ public:
                              const PropertyMap &map = PropertyMap()) const;
 
     Selector<Atom> selectAll() const;
-    
+
     Selector<Atom> selectAllAtoms() const;
-    
+
     Selector<CutGroup> selectAll(const CGID &cgid,
                                  const PropertyMap &map = PropertyMap()) const;
     Selector<CutGroup> selectAllCutGroups() const;
-    
+
     Selector<Residue> selectAll(const ResID &resid,
                                 const PropertyMap &map = PropertyMap()) const;
     Selector<Residue> selectAllResidues() const;
@@ -209,7 +292,7 @@ public:
     Selector<Chain> selectAll(const ChainID &chainid,
                               const PropertyMap &map = PropertyMap()) const;
     Selector<Chain> selectAllChains() const;
-    
+
     Selector<Segment> selectAll(const SegID &segid,
                                 const PropertyMap &map = PropertyMap()) const;
     Selector<Segment> selectAllSegments() const;
@@ -221,34 +304,34 @@ public:
            *and* it fits the view (e.g. is an AtomProperty if this
            is a view of an Atom or group of Atoms) */
     virtual bool hasProperty(const PropertyName &key) const=0;
-    
+
     /** Return whether or not this view has the metadata at metakey 'metakey'
          - note that this returns true only if there is some metadata,
            *and* it fits the view (e.g. is an AtomProperty if this
            is a view of an Atom or group of Atoms) */
     virtual bool hasMetadata(const PropertyName &metakey) const=0;
 
-    /** Return whether or not this view has the metadata at metakey 
+    /** Return whether or not this view has the metadata at metakey
         'metakey' for the property at key 'key'
          - note that this returns true only if there is some metadata,
            *and* it fits the view (e.g. is an AtomProperty if this
            is a view of an Atom or group of Atoms) */
-    virtual bool hasMetadata(const PropertyName &key, 
+    virtual bool hasMetadata(const PropertyName &key,
                              const PropertyName &metakey) const=0;
 
     /** Return the list of keys of properties that fit this view,
         e.g. if this is a view of an atom, or group of atoms, then
         this returns the keys of all AtomProperty derived objects */
     virtual QStringList propertyKeys() const=0;
-    
+
     QStringList keys() const;
-    
+
     /** Return the list of metakeys of metadata that fit this view,
         e.g. if this is a view of an atom, or group of atoms, then
         this returns the metakeys of all AtomProperty derived objects */
     virtual QStringList metadataKeys() const=0;
 
-    /** Return the list of metakeys of metadata for the 
+    /** Return the list of metakeys of metadata for the
         property at key 'key' that fit this view,
         e.g. if this is a view of an atom, or group of atoms, then
         this returns the metakeys of all AtomProperty derived objects */
@@ -256,7 +339,7 @@ public:
 
     const char* propertyType(const PropertyName &key) const;
     const char* metadataType(const PropertyName &metakey) const;
-    
+
     const char* metadataType(const PropertyName &key,
                              const PropertyName &metakey) const;
 
@@ -287,19 +370,19 @@ protected:
 
     template<class Index, class PropType, class T>
     static void setProperty(MoleculeData &data,
-                            const QString &key, 
+                            const QString &key,
                             const Index &idx, const T &value);
 
     template<class Index, class PropType, class T>
     static void setMetadata(MoleculeData &data,
-                            const QString &metakey, 
+                            const QString &metakey,
                             const Index &idx, const T &value);
 
     template<class Index, class PropType, class T>
     static void setMetadata(MoleculeData &data,
                             const QString &key, const QString &metakey,
                             const Index &idx, const T &value);
-                            
+
 
     /** Shared pointer to the raw data of the molecule */
     SireBase::SharedDataPointer<MoleculeData> d;
@@ -310,11 +393,11 @@ protected:
 template<class Index, class PropType, class T>
 SIRE_OUTOFLINE_TEMPLATE
 void MoleculeView::setProperty(MoleculeData &data,
-                               const QString &key, 
+                               const QString &key,
                                const Index &idx, const T &value)
 {
     PropType props;
-    
+
     if (data.hasProperty(key))
     {
         //take the property to prevent unnecessary copying caused
@@ -324,20 +407,20 @@ void MoleculeView::setProperty(MoleculeData &data,
     }
     else
         props = PropType(data.info());
-        
+
     props.set(idx, value);
-    
+
     data.setProperty(key, props);
 }
 
 template<class Index, class PropType, class T>
 SIRE_OUTOFLINE_TEMPLATE
 void MoleculeView::setMetadata(MoleculeData &data,
-                               const QString &metakey, 
+                               const QString &metakey,
                                const Index &idx, const T &value)
 {
     PropType props;
-    
+
     if (data.hasMetadata(metakey))
     {
         //take the metadata to prevent unnecessary copying caused
@@ -347,9 +430,9 @@ void MoleculeView::setMetadata(MoleculeData &data,
     }
     else
         props = PropType(data.info());
-        
+
     props.set(idx, value);
-    
+
     data.setMetadata(metakey, props);
 }
 
@@ -360,7 +443,7 @@ void MoleculeView::setMetadata(MoleculeData &data,
                                const Index &idx, const T &value)
 {
     PropType props;
-    
+
     if (data.hasMetadata(key, metakey))
     {
         //take the metadata to prevent unnecessary copying caused
@@ -370,9 +453,9 @@ void MoleculeView::setMetadata(MoleculeData &data,
     }
     else
         props = PropType(data.info());
-        
+
     props.set(idx, value);
-    
+
     data.setMetadata(key, metakey, props);
 }
 
@@ -385,34 +468,34 @@ QList<V> get_property(const MoleculeData &moldata,
                       const PropertyName &key)
 {
     QList<V> props;
-        
+
     const Property &property = moldata.property(key);
-    
+
     const Prop &prop = property.asA<Prop>();
-        
+
     foreach (Idx idx, idxs)
     {
         props.append( prop.at(idx) );
     }
-        
+
     return props;
 }
-    
+
 template<class Prop, class Idx, class V>
 QList<V> get_metadata(const MoleculeData &moldata,
                       const QList<Idx> &idxs,
                       const PropertyName &metakey)
 {
     QList<V> props;
-    
+
     const Property &property = moldata.metadata(metakey);
     const Prop &prop = property.asA<Prop>();
-    
+
     foreach (Idx idx, idxs)
     {
         props.append( prop.at(idx) );
     }
-    
+
     return props;
 }
 
@@ -423,15 +506,15 @@ QList<V> get_metadata(const MoleculeData &moldata,
                       const PropertyName &metakey)
 {
     QList<V> props;
-    
+
     const Property &property = moldata.metadata(key,metakey);
     const Prop &prop = property.asA<Prop>();
-    
+
     foreach (Idx idx, idxs)
     {
         props.append( prop.at(idx) );
     }
-    
+
     return props;
 }
 
@@ -442,17 +525,17 @@ void set_property(MoleculeData &moldata,
                   const QList<V> &values)
 {
     Prop props;
-    
+
     if (moldata.hasProperty(key))
         props = moldata.property(key);
     else
         props = Prop(moldata.info());
-        
+
     for (int i=0; i<idxs.count(); ++i)
     {
         props.set(idxs[i], values[i]);
     }
-    
+
     moldata.setProperty(key, props);
 }
 
@@ -463,17 +546,17 @@ void set_metadata(MoleculeData &moldata,
                   const QList<V> &values)
 {
     Prop props;
-    
+
     if (moldata.hasMetadata(metakey))
         props = moldata.metadata(metakey);
     else
         props = Prop(moldata.info());
-        
+
     for (int i=0; i<idxs.count(); ++i)
     {
         props.set(idxs[i], values[i]);
     }
-    
+
     moldata.setMetadata(metakey, props);
 }
 
@@ -484,17 +567,17 @@ void set_metadata(MoleculeData &moldata,
                   const QList<V> &values)
 {
     Prop props;
-    
+
     if (moldata.hasMetadata(key,metakey))
         props = moldata.metadata(key,metakey);
     else
         props = Prop(moldata.info());
-        
+
     for (int i=0; i<idxs.count(); ++i)
     {
         props.set(idxs[i], values[i]);
     }
-    
+
     moldata.setMetadata(key, metakey, props);
 }
 
@@ -505,17 +588,17 @@ void set_property(MoleculeData &moldata,
                   const V &value)
 {
     Prop props;
-    
+
     if (moldata.hasProperty(key))
         props = moldata.property(key);
     else
         props = Prop(moldata.info());
-        
+
     foreach (Idx idx, idxs)
     {
         props.set(idx, value);
     }
-    
+
     moldata.setProperty(key, props);
 }
 
@@ -526,17 +609,17 @@ void set_metadata(MoleculeData &moldata,
                   const V &value)
 {
     Prop props;
-    
+
     if (moldata.hasMetadata(metakey))
         props = moldata.metadata(metakey);
     else
         props = Prop(moldata.info());
-        
+
     foreach (Idx idx, idxs)
     {
         props.set(idx, value);
     }
-    
+
     moldata.setMetadata(metakey, props);
 }
 
@@ -547,17 +630,17 @@ void set_metadata(MoleculeData &moldata,
                   const V &value)
 {
     Prop props;
-    
+
     if (moldata.hasMetadata(key,metakey))
         props = moldata.metadata(key,metakey);
     else
         props = Prop(moldata.info());
-        
+
     foreach (Idx idx, idxs)
     {
         props.set(idx, value);
     }
-    
+
     moldata.setMetadata(key, metakey, props);
 }
 

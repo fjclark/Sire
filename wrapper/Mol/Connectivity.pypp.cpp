@@ -7,6 +7,8 @@
 
 namespace bp = boost::python;
 
+#include "SireBase/errors.h"
+
 #include "SireMol/errors.h"
 
 #include "SireStream/datastream.h"
@@ -53,6 +55,8 @@ SireMol::Connectivity __copy__(const SireMol::Connectivity &other){ return SireM
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 void register_Connectivity_class(){
 
     { //::SireMol::Connectivity
@@ -72,6 +76,7 @@ void register_Connectivity_class(){
             Connectivity_exposer.def( 
                 "edit"
                 , edit_function_value
+                , bp::release_gil_policy()
                 , "Return an editor that can edit a copy of this connectivity" );
         
         }
@@ -111,6 +116,7 @@ void register_Connectivity_class(){
             Connectivity_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

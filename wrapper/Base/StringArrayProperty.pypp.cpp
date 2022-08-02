@@ -15,6 +15,8 @@ namespace bp = boost::python;
 
 #include "arrayproperty.hpp"
 
+#include "booleanproperty.h"
+
 #include "numberproperty.h"
 
 #include "propertylist.h"
@@ -23,6 +25,8 @@ namespace bp = boost::python;
 
 #include "tostring.h"
 
+#include "variantproperty.h"
+
 #include "propertylist.h"
 
 SireBase::StringArrayProperty __copy__(const SireBase::StringArrayProperty &other){ return SireBase::StringArrayProperty(other); }
@@ -30,6 +34,8 @@ SireBase::StringArrayProperty __copy__(const SireBase::StringArrayProperty &othe
 #include "Qt/qdatastream.hpp"
 
 #include "Helpers/str.hpp"
+
+#include "Helpers/release_gil_policy.hpp"
 
 #include "Helpers/len.hpp"
 
@@ -41,6 +47,9 @@ void register_StringArrayProperty_class(){
         bp::scope StringArrayProperty_scope( StringArrayProperty_exposer );
         StringArrayProperty_exposer.def( bp::init< QList< QString > const & >(( bp::arg("array") ), "") );
         StringArrayProperty_exposer.def( bp::init< QVector< QString > const & >(( bp::arg("array") ), "") );
+        StringArrayProperty_exposer.def( bp::init< SireBase::DoubleArrayProperty const & >(( bp::arg("array") ), "") );
+        StringArrayProperty_exposer.def( bp::init< SireBase::IntegerArrayProperty const & >(( bp::arg("array") ), "") );
+        StringArrayProperty_exposer.def( bp::init< SireBase::PropertyList const & >(( bp::arg("array") ), "") );
         StringArrayProperty_exposer.def( bp::init< SireBase::StringArrayProperty const & >(( bp::arg("other") ), "") );
         { //::SireBase::StringArrayProperty::asABoolean
         
@@ -50,6 +59,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "asABoolean"
                 , asABoolean_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -61,6 +71,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "asADouble"
                 , asADouble_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -72,6 +83,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "asAString"
                 , asAString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -83,6 +95,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "asAnArray"
                 , asAnArray_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -94,6 +107,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "asAnInteger"
                 , asAnInteger_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -105,6 +119,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "isABoolean"
                 , isABoolean_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -116,6 +131,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "isADouble"
                 , isADouble_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -127,6 +143,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "isAString"
                 , isAString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -138,6 +155,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "isAnInteger"
                 , isAnInteger_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -165,6 +183,7 @@ void register_StringArrayProperty_class(){
             StringArrayProperty_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

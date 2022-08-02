@@ -27,6 +27,8 @@
 
 #include "AtomCutting.pypp.hpp"
 
+#include "AtomDoubleArrayProperty.pypp.hpp"
+
 #include "AtomEditor.pypp.hpp"
 
 #include "AtomEditorBase.pypp.hpp"
@@ -49,6 +51,8 @@
 
 #include "AtomIntProperty.pypp.hpp"
 
+#include "AtomIntegerArrayProperty.pypp.hpp"
+
 #include "AtomMCSMatcher.pypp.hpp"
 
 #include "AtomMasses.pypp.hpp"
@@ -69,11 +73,17 @@
 
 #include "AtomProp.pypp.hpp"
 
+#include "AtomPropertyList.pypp.hpp"
+
+#include "AtomRadicals.pypp.hpp"
+
 #include "AtomRadii.pypp.hpp"
 
 #include "AtomResultMatcher.pypp.hpp"
 
 #include "AtomSelection.pypp.hpp"
+
+#include "AtomStringArrayProperty.pypp.hpp"
 
 #include "AtomStringProperty.pypp.hpp"
 
@@ -122,6 +132,8 @@
 #include "BondID.pypp.hpp"
 
 #include "BondPerturbation.pypp.hpp"
+
+#include "BondType.pypp.hpp"
 
 #include "CGAtomID.pypp.hpp"
 
@@ -212,6 +224,8 @@
 #include "Element.pypp.hpp"
 
 #include "Evaluator.pypp.hpp"
+
+#include "EvaluatorM.pypp.hpp"
 
 #include "Force3D.pypp.hpp"
 
@@ -371,6 +385,8 @@
 
 #include "Perturbations.pypp.hpp"
 
+#include "Radical.pypp.hpp"
+
 #include "RelFromMass.pypp.hpp"
 
 #include "RelFromNumber.pypp.hpp"
@@ -459,6 +475,18 @@
 
 #include "SelectResultMover.pypp.hpp"
 
+#include "SelectorM_Atom_.pypp.hpp"
+
+#include "SelectorM_Chain_.pypp.hpp"
+
+#include "SelectorM_CutGroup_.pypp.hpp"
+
+#include "SelectorM_Residue_.pypp.hpp"
+
+#include "SelectorM_Segment_.pypp.hpp"
+
+#include "SelectorMol.pypp.hpp"
+
 #include "Selector_Atom_.pypp.hpp"
 
 #include "Selector_Chain_.pypp.hpp"
@@ -482,6 +510,8 @@
 #include "Specify_ResID_.pypp.hpp"
 
 #include "Specify_SegID_.pypp.hpp"
+
+#include "Stereoscopy.pypp.hpp"
 
 #include "UserBeading.pypp.hpp"
 
@@ -656,6 +686,14 @@ BOOST_PYTHON_MODULE(_Mol){
 
     register_AtomVariantProperty_class();
 
+    register_AtomDoubleArrayProperty_class();
+
+    register_AtomIntegerArrayProperty_class();
+
+    register_AtomPropertyList_class();
+
+    register_AtomStringArrayProperty_class();
+
     register_AtomForces_class();
 
     register_AtomVelocities_class();
@@ -665,6 +703,8 @@ BOOST_PYTHON_MODULE(_Mol){
     register_AtomBeads_class();
 
     register_AtomElements_class();
+
+    register_AtomRadicals_class();
 
     register_AtomCharges_class();
 
@@ -725,6 +765,8 @@ BOOST_PYTHON_MODULE(_Mol){
     register_BondID_class();
 
     register_BondPerturbation_class();
+
+    register_BondType_class();
 
     register_CGAtomIdx_class();
 
@@ -813,6 +855,8 @@ BOOST_PYTHON_MODULE(_Mol){
     register_Element_class();
 
     register_Evaluator_class();
+
+    register_EvaluatorM_class();
 
     register_GeometryPerturbations_class();
 
@@ -932,6 +976,8 @@ BOOST_PYTHON_MODULE(_Mol){
 
     register_Perturbations_class();
 
+    register_Radical_class();
+
     register_RelFromMass_class();
 
     register_RelFromNumber_class();
@@ -998,7 +1044,21 @@ BOOST_PYTHON_MODULE(_Mol){
 
     register_SelectResultMover_class();
 
+    register_SelectorM_Atom__class();
+
+    register_SelectorM_Chain__class();
+
+    register_SelectorM_CutGroup__class();
+
+    register_SelectorM_Residue__class();
+
+    register_SelectorM_Segment__class();
+
+    register_SelectorMol_class();
+
     register_SpecifyMol_class();
+
+    register_Stereoscopy_class();
 
     register_UserBeading_class();
 

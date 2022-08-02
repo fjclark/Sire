@@ -21,6 +21,8 @@ SireMol::AtomProperty<SireMol::Element> __copy__(const SireMol::AtomProperty<Sir
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 #include "Helpers/len.hpp"
 
 void register_AtomElements_class(){
@@ -61,6 +63,7 @@ void register_AtomElements_class(){
                 "assertCanConvert"
                 , assertCanConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -74,6 +77,7 @@ void register_AtomElements_class(){
                 "assignFrom"
                 , assignFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -115,6 +119,7 @@ void register_AtomElements_class(){
                 "canConvert"
                 , canConvert_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -128,6 +133,7 @@ void register_AtomElements_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -141,6 +147,7 @@ void register_AtomElements_class(){
                 "copyFrom"
                 , copyFrom_function_value
                 , ( bp::arg("values"), bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -153,6 +160,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "count"
                 , count_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -166,6 +174,7 @@ void register_AtomElements_class(){
                 "divide"
                 , divide_function_value
                 , ( bp::arg("beads") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -179,6 +188,7 @@ void register_AtomElements_class(){
                 "divideByResidue"
                 , divideByResidue_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -192,6 +202,7 @@ void register_AtomElements_class(){
                 "fromVariant"
                 , fromVariant_function_value
                 , ( bp::arg("variant") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -223,6 +234,34 @@ void register_AtomElements_class(){
                 , "" );
         
         }
+        { //::SireMol::AtomProperty< SireMol::Element >::getAsProperty
+        
+            typedef SireMol::AtomProperty< SireMol::Element > exported_class_t;
+            typedef ::SireBase::PropertyPtr ( ::SireMol::AtomProperty< SireMol::Element >::*getAsProperty_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsProperty_function_type getAsProperty_function_value( &::SireMol::AtomProperty< SireMol::Element >::getAsProperty );
+            
+            AtomElements_exposer.def( 
+                "getAsProperty"
+                , getAsProperty_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
+        { //::SireMol::AtomProperty< SireMol::Element >::getAsVariant
+        
+            typedef SireMol::AtomProperty< SireMol::Element > exported_class_t;
+            typedef ::QVariant ( ::SireMol::AtomProperty< SireMol::Element >::*getAsVariant_function_type)( ::SireMol::CGAtomIdx const & ) const;
+            getAsVariant_function_type getAsVariant_function_value( &::SireMol::AtomProperty< SireMol::Element >::getAsVariant );
+            
+            AtomElements_exposer.def( 
+                "getAsVariant"
+                , getAsVariant_function_value
+                , ( bp::arg("cgatomidx") )
+                , bp::release_gil_policy()
+                , "" );
+        
+        }
         { //::SireMol::AtomProperty< SireMol::Element >::isCompatibleWith
         
             typedef SireMol::AtomProperty< SireMol::Element > exported_class_t;
@@ -233,6 +272,7 @@ void register_AtomElements_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -246,6 +286,7 @@ void register_AtomElements_class(){
                 "isCompatibleWith"
                 , isCompatibleWith_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -258,6 +299,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "isEmpty"
                 , isEmpty_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -271,6 +313,7 @@ void register_AtomElements_class(){
                 "matchToSelection"
                 , matchToSelection_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -284,6 +327,7 @@ void register_AtomElements_class(){
                 "merge"
                 , merge_function_value
                 , ( bp::arg("molinfo") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -296,6 +340,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "nAtoms"
                 , nAtoms_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -309,6 +354,7 @@ void register_AtomElements_class(){
                 "nAtoms"
                 , nAtoms_function_value
                 , ( bp::arg("cgidx") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -321,6 +367,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "nCutGroups"
                 , nCutGroups_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -405,6 +452,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "size"
                 , size_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -417,6 +465,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "toString"
                 , toString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -429,6 +478,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "toVariant"
                 , toVariant_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -441,6 +491,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "toVector"
                 , toVector_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -454,6 +505,7 @@ void register_AtomElements_class(){
                 "toVector"
                 , toVector_function_value
                 , ( bp::arg("selection") )
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -466,6 +518,7 @@ void register_AtomElements_class(){
             AtomElements_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

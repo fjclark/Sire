@@ -7,6 +7,8 @@
 
 namespace bp = boost::python;
 
+#include "SireBase/errors.h"
+
 #include "SireMol/errors.h"
 
 #include "SireStream/datastream.h"
@@ -53,6 +55,8 @@ SireMol::ConnectivityEditor __copy__(const SireMol::ConnectivityEditor &other){ 
 
 #include "Helpers/str.hpp"
 
+#include "Helpers/release_gil_policy.hpp"
+
 void register_ConnectivityEditor_class(){
 
     { //::SireMol::ConnectivityEditor
@@ -69,6 +73,7 @@ void register_ConnectivityEditor_class(){
             ConnectivityEditor_exposer.def( 
                 "commit"
                 , commit_function_value
+                , bp::release_gil_policy()
                 , "Return the editied connectivity" );
         
         }
@@ -203,6 +208,58 @@ void register_ConnectivityEditor_class(){
         
         }
         ConnectivityEditor_exposer.def( bp::self == bp::self );
+        { //::SireMol::ConnectivityEditor::removeProperty
+        
+            typedef ::SireMol::ConnectivityEditor & ( ::SireMol::ConnectivityEditor::*removeProperty_function_type)( ::QString const & ) ;
+            removeProperty_function_type removeProperty_function_value( &::SireMol::ConnectivityEditor::removeProperty );
+            
+            ConnectivityEditor_exposer.def( 
+                "removeProperty"
+                , removeProperty_function_value
+                , ( bp::arg("key") )
+                , bp::return_self< >()
+                , "Remove the specified property from all bonds" );
+        
+        }
+        { //::SireMol::ConnectivityEditor::removeProperty
+        
+            typedef ::SireMol::ConnectivityEditor & ( ::SireMol::ConnectivityEditor::*removeProperty_function_type)( ::SireMol::BondID const &,::QString const & ) ;
+            removeProperty_function_type removeProperty_function_value( &::SireMol::ConnectivityEditor::removeProperty );
+            
+            ConnectivityEditor_exposer.def( 
+                "removeProperty"
+                , removeProperty_function_value
+                , ( bp::arg("bond"), bp::arg("key") )
+                , bp::return_self< >()
+                , "Remove the specified property from the specified bond" );
+        
+        }
+        { //::SireMol::ConnectivityEditor::setProperty
+        
+            typedef ::SireMol::ConnectivityEditor & ( ::SireMol::ConnectivityEditor::*setProperty_function_type)( ::SireMol::BondID const &,::QString const &,::SireBase::Property const & ) ;
+            setProperty_function_type setProperty_function_value( &::SireMol::ConnectivityEditor::setProperty );
+            
+            ConnectivityEditor_exposer.def( 
+                "setProperty"
+                , setProperty_function_value
+                , ( bp::arg("bond"), bp::arg("key"), bp::arg("value") )
+                , bp::return_self< >()
+                , "Set the property for the specified bond, at the specified key, to value" );
+        
+        }
+        { //::SireMol::ConnectivityEditor::takeProperty
+        
+            typedef ::SireBase::PropertyPtr ( ::SireMol::ConnectivityEditor::*takeProperty_function_type)( ::SireMol::BondID const &,::QString const & ) ;
+            takeProperty_function_type takeProperty_function_value( &::SireMol::ConnectivityEditor::takeProperty );
+            
+            ConnectivityEditor_exposer.def( 
+                "takeProperty"
+                , takeProperty_function_value
+                , ( bp::arg("bond"), bp::arg("key") )
+                , bp::release_gil_policy()
+                , "Take the specified property from the specified bond - this removes\nand returns the property if it exists. If it doesnt, then\na NullProperty is returned\n" );
+        
+        }
         { //::SireMol::ConnectivityEditor::typeName
         
             typedef char const * ( *typeName_function_type )(  );
@@ -211,6 +268,7 @@ void register_ConnectivityEditor_class(){
             ConnectivityEditor_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }

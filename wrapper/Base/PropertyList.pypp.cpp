@@ -16,6 +16,8 @@ namespace bp = boost::python;
 
 #include "arrayproperty.hpp"
 
+#include "booleanproperty.h"
+
 #include "numberproperty.h"
 
 #include "propertylist.h"
@@ -24,6 +26,8 @@ namespace bp = boost::python;
 
 #include "tostring.h"
 
+#include "variantproperty.h"
+
 #include "propertylist.h"
 
 SireBase::PropertyList __copy__(const SireBase::PropertyList &other){ return SireBase::PropertyList(other); }
@@ -31,6 +35,8 @@ SireBase::PropertyList __copy__(const SireBase::PropertyList &other){ return Sir
 #include "Qt/qdatastream.hpp"
 
 #include "Helpers/str.hpp"
+
+#include "Helpers/release_gil_policy.hpp"
 
 #include "Helpers/len.hpp"
 
@@ -57,6 +63,7 @@ void register_PropertyList_class(){
                 "append"
                 , append_function_value
                 , ( bp::arg("property") )
+                , bp::release_gil_policy()
                 , "Add the passed property onto the end of this list" );
         
         }
@@ -69,6 +76,7 @@ void register_PropertyList_class(){
                 "append"
                 , append_function_value
                 , ( bp::arg("props") )
+                , bp::release_gil_policy()
                 , "Append the list of properties onto the end of this list" );
         
         }
@@ -80,6 +88,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "array"
                 , array_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -91,6 +100,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "asABoolean"
                 , asABoolean_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -102,6 +112,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "asADouble"
                 , asADouble_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -113,6 +124,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "asAString"
                 , asAString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -124,6 +136,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "asAnInteger"
                 , asAnInteger_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -136,7 +149,7 @@ void register_PropertyList_class(){
                 "at"
                 , at_function_value
                 , ( bp::arg("i") )
-                , bp::return_value_policy<bp::clone_const_reference>()
+                , bp::return_value_policy<bp::clone_const_reference, bp::release_gil_policy>()
                 , "Return the element at index i" );
         
         }
@@ -148,6 +161,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "clear"
                 , clear_function_value
+                , bp::release_gil_policy()
                 , "Clear the list" );
         
         }
@@ -159,6 +173,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "count"
                 , count_function_value
+                , bp::release_gil_policy()
                 , "Return the number of elements in the list" );
         
         }
@@ -170,6 +185,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "empty"
                 , empty_function_value
+                , bp::release_gil_policy()
                 , "Return whether or not the list is empty" );
         
         }
@@ -182,6 +198,7 @@ void register_PropertyList_class(){
                 "insert"
                 , insert_function_value
                 , ( bp::arg("i"), bp::arg("value") )
+                , bp::release_gil_policy()
                 , "Insert the passed value at index i" );
         
         }
@@ -193,6 +210,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "isABoolean"
                 , isABoolean_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -204,6 +222,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "isADouble"
                 , isADouble_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -215,6 +234,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "isAString"
                 , isAString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -226,6 +246,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "isAnInteger"
                 , isAnInteger_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -237,6 +258,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "isEmpty"
                 , isEmpty_function_value
+                , bp::release_gil_policy()
                 , "Return whether or not the list is empty" );
         
         }
@@ -261,6 +283,7 @@ void register_PropertyList_class(){
                 "move"
                 , move_function_value
                 , ( bp::arg("from"), bp::arg("to") )
+                , bp::release_gil_policy()
                 , "Move an element of the list from index from to index to" );
         
         }
@@ -289,7 +312,7 @@ void register_PropertyList_class(){
                 "__getitem__"
                 , __getitem___function_value
                 , ( bp::arg("i") )
-                , bp::return_value_policy<bp::clone_const_reference>()
+                , bp::return_value_policy<bp::clone_const_reference, bp::release_gil_policy>()
                 , "" );
         
         }
@@ -301,6 +324,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "pop_back"
                 , pop_back_function_value
+                , bp::release_gil_policy()
                 , "Pop off an element from the back of the list" );
         
         }
@@ -312,6 +336,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "pop_front"
                 , pop_front_function_value
+                , bp::release_gil_policy()
                 , "Pop off an element from the front of the list" );
         
         }
@@ -324,6 +349,7 @@ void register_PropertyList_class(){
                 "prepend"
                 , prepend_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "Prepend the passed property to the beginning of the list" );
         
         }
@@ -336,6 +362,7 @@ void register_PropertyList_class(){
                 "push_back"
                 , push_back_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "Push the passed value onto the back of the list" );
         
         }
@@ -348,6 +375,7 @@ void register_PropertyList_class(){
                 "push_front"
                 , push_front_function_value
                 , ( bp::arg("value") )
+                , bp::release_gil_policy()
                 , "Push the passed value onto the front of the list" );
         
         }
@@ -360,6 +388,7 @@ void register_PropertyList_class(){
                 "removeAt"
                 , removeAt_function_value
                 , ( bp::arg("i") )
+                , bp::release_gil_policy()
                 , "Remove the item at index i" );
         
         }
@@ -371,6 +400,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "removeFirst"
                 , removeFirst_function_value
+                , bp::release_gil_policy()
                 , "Remove the first element from the list" );
         
         }
@@ -382,6 +412,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "removeLast"
                 , removeLast_function_value
+                , bp::release_gil_policy()
                 , "Remove the last element from the list" );
         
         }
@@ -394,6 +425,7 @@ void register_PropertyList_class(){
                 "replace"
                 , replace_function_value
                 , ( bp::arg("i"), bp::arg("value") )
+                , bp::release_gil_policy()
                 , "Replace the element at index i with value" );
         
         }
@@ -405,6 +437,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "size"
                 , size_function_value
+                , bp::release_gil_policy()
                 , "Return the number of elements in the list" );
         
         }
@@ -417,6 +450,7 @@ void register_PropertyList_class(){
                 "swap"
                 , swap_function_value
                 , ( bp::arg("other") )
+                , bp::release_gil_policy()
                 , "Swap this list with other" );
         
         }
@@ -429,6 +463,7 @@ void register_PropertyList_class(){
                 "swap"
                 , swap_function_value
                 , ( bp::arg("i"), bp::arg("j") )
+                , bp::release_gil_policy()
                 , "Swap elements i and j" );
         
         }
@@ -441,6 +476,7 @@ void register_PropertyList_class(){
                 "takeAt"
                 , takeAt_function_value
                 , ( bp::arg("i") )
+                , bp::release_gil_policy()
                 , "Take the element at index i" );
         
         }
@@ -452,6 +488,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "takeFirst"
                 , takeFirst_function_value
+                , bp::release_gil_policy()
                 , "Take the first element" );
         
         }
@@ -463,6 +500,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "takeLast"
                 , takeLast_function_value
+                , bp::release_gil_policy()
                 , "Take the last element" );
         
         }
@@ -474,6 +512,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "toList"
                 , toList_function_value
+                , bp::release_gil_policy()
                 , "Return this as a QList<PropertyPtr>" );
         
         }
@@ -485,6 +524,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "toString"
                 , toString_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -496,6 +536,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "toVector"
                 , toVector_function_value
+                , bp::release_gil_policy()
                 , "Return this as a QVector<PropertyPtr>" );
         
         }
@@ -507,6 +548,7 @@ void register_PropertyList_class(){
             PropertyList_exposer.def( 
                 "typeName"
                 , typeName_function_value
+                , bp::release_gil_policy()
                 , "" );
         
         }
@@ -519,6 +561,7 @@ void register_PropertyList_class(){
                 "value"
                 , value_function_value
                 , ( bp::arg("i") )
+                , bp::release_gil_policy()
                 , "Return the value at index i, or a null property if this is\nan invalid index" );
         
         }
@@ -531,6 +574,7 @@ void register_PropertyList_class(){
                 "value"
                 , value_function_value
                 , ( bp::arg("i"), bp::arg("default_value") )
+                , bp::release_gil_policy()
                 , "Return the value at index i or default_value if this is an invalid index" );
         
         }

@@ -356,7 +356,8 @@ def run():
     # Create N orientations of restrained guest atoms by
     # rigid body rotations around COM
     guest_orientations = genOrientations(restr_dict, norientations=norient.val)
-    weight_norm_factor = ROT / sum([x[1] for x in guest_orientations])
+    weight_norm_factor = ROT / sum([x[0][1] for x in guest_orientations]) # Weight for first rotvector - all will be the same
+                                                                          # for a given orientation
     # FIXME: make sure space extends well into regions where restraint energy
     # is high
     space = defineIntegrationDomain(restr_dict)
@@ -405,7 +406,7 @@ def run():
                             U += 0.0
                         pos += 1
                         #print ("d %s U %s " % (d,U))
-                    deltarot = orientation[pos][1]*weight_norm_factor # Select weight and normalise to obtain a total of ROT
+                    deltarot = orientation[0][1]*weight_norm_factor # Select weight and normalise to obtain a total of ROT
                     Boltz = math.exp(-beta*U)*deltavol*deltarot
                     Uavg += U*Boltz
                     Ztot += Boltz

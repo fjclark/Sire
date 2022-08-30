@@ -1232,7 +1232,7 @@ void OpenMMFrEnergyST::initialise()
     /****************************************BOND LINK POTENTIAL*****************************/
     /* FC 12/21 CustomBondForce now (OpenMM 7.4.0) allows application of PBC checks*/
 
-    OpenMM::CustomBondForce * custom_link_bond = new OpenMM::CustomBondForce("delta(min(0, r_eff))*kl*r_eff^2;"
+    OpenMM::CustomBondForce * custom_link_bond = new OpenMM::CustomBondForce("lamrest*delta(min(0, r_eff))*kl*r_eff^2;"
                                                                              "r_eff=abs(r-reql)-dl");
     custom_link_bond->addPerBondParameter("reql");
     custom_link_bond->addPerBondParameter("kl");
